@@ -7,8 +7,11 @@
     Common = window.DiningCommonWindows,
     D = window.DiningDecision,
     $ = (id) => document.getElementById(id);
+  function exampleConfig() {
+    return window.DiningScheduleStudy.makeConfig(window.DiningBinheCohort.create(), 'combined', { slotSeconds: 70 });
+  }
   const state = {
-    config: window.DiningBinheCohort.create(),
+    config: exampleConfig(),
     result: null,
     baseline: null,
     comparison: null,
@@ -31,6 +34,7 @@
   };
   let parameterOriginal = {};
   let plannerUI = null;
+  let scheduleUI = null;
   const escape = (s) =>
     String(s).replace(
       /[&<>"']/g,
@@ -135,6 +139,7 @@
     renderChart();
     if (state.comparison) renderComparison();
     renderGuide();
+    scheduleUI?.onConfigChange();
     updateSearchState();
     plannerUI?.onConfigChange();
     status('仿真已完成');
@@ -984,7 +989,7 @@
       $('file-input').value = '';
     }
   };
-  $('example-reset').onclick = () => run(window.DiningBinheCohort.create());
+  $('example-reset').onclick = () => run(exampleConfig());
   $('set-baseline').onclick = () => setBaseline(state.config, '保存的当前方案');
   $('sync-baseline').onclick = () => {
     try {
@@ -1078,6 +1083,11 @@
       status('放行表已载入，可回放或与原安排比较');
     }
   });
+  scheduleUI = window.DiningScheduleView.mount({
+    getConfig: () => state.config, isBusy: () => state.busy, setBusy: busy,
+    yieldUI, message, status, json, download,
+    loadConfig: (config) => { run(config); tab('live'); status('研究方案已载入，可观察就餐过程'); }
+  });
   run(state.config);
   requestAnimationFrame(animate);
   new ResizeObserver(() => {
@@ -1097,6 +1107,7 @@
       comparison: state.comparison ? R.clone(state.comparison) : null,
       scenarioCheck: state.scenarioCheck ? R.clone(state.scenarioCheck) : null,
       search: state.search ? R.clone(state.search) : null,
+      scheduleStudy: R.clone(scheduleUI?.snapshot() || null),
       planner: R.clone(plannerUI?.snapshot() || null)
     })
   });

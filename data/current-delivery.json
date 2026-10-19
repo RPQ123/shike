@@ -1,0 +1,28 @@
+{
+  "version": "2.5.0",
+  "build": "f7d563d4a57d00cf",
+  "executions": 660,
+  "selectedSeconds": 70,
+  "reportPdfSha256": "3240481a2c773fd759bcb055cee3f9aff4e8add543fdb3db9e91cc4c6c5e0fb7",
+  "resultsSha256": "591d7542864ee7b068c078e1b06b8df1c05923221904cad09e040b62b225e2dd",
+  "packages": [
+    {
+      "file": "校园食堂研究_三种安排与推广版_提交材料.zip",
+      "bytes": 5480217,
+      "sha256": "0afacdcf0b2dfadf9517e0810797530dffe1bb0286a728268b1dda8404149318",
+      "entries": 25
+    },
+    {
+      "file": "校园食堂研究_三种安排与推广版_Windows与离线网页.zip",
+      "bytes": 18428853,
+      "sha256": "4a45b32c09cdb493be1b4e162897095c65c47636658890330ecb40bd5bf5060b",
+      "entries": 171
+    },
+    {
+      "file": "校园食堂研究_三种安排与推广版_源码与研究记录.zip",
+      "bytes": 2924155,
+      "sha256": "1916ad7aa7bdffe7a6f2fa5d571f1030434cf4ef88011a45743ad846615ab253",
+      "entries": 90
+    }
+  ]
+}

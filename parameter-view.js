@@ -32,7 +32,7 @@
       '窗口与座位',
       '<p class="form-help">所有窗口通用，按预计取餐完成最早分配；两侧窗口、中间座位、前后进出。</p>' +
         grid(
-          field('windows', '窗口总数', c.windows, { min: 2, max: 16, step: 1 }) +
+          field('windows', '开放窗口数量', c.windows, { min: 2, max: 16, step: 1 }) +
             field('seats', '座位总数', c.seats, { min: 2, max: 5000, step: 1 }) +
             field('serviceMean', '平均打餐时间 / 秒', c.serviceMean, {
               min: 5,

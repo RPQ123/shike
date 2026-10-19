@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="layout.css" />
     <link rel="stylesheet" href="studio.css" />
+      <link rel="stylesheet" href="schedule.css" />
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -148,10 +149,12 @@
           <div class="page-heading">
             <div>
               <h1 id="compare-title">方案比较</h1>
-              <p>保存当前方案为 A，修改参数作为 B，再比较结果。</p>
+              <p>先比较三种安排，再选择合适的班组出发间隔。</p>
             </div>
             <button id="export-compare" class="button" disabled>导出实验</button>
           </div>
+          <div id="schedule-study"></div>
+          <details id="legacy-comparison" class="panel legacy-comparison"><summary>自定义两方案比较</summary>
           <ol class="experiment-steps" aria-label="比较步骤">
             <li data-experiment-step="1"><span>1</span>保存 A</li>
             <li data-experiment-step="2"><span>2</span>修改 B</li>
@@ -221,10 +224,11 @@
               <summary>情景和阈值怎么设定</summary>
               <p>服务用时取当前值的0.8、1、1.2倍，共3组情景。所有窗口都能服务所有学生。</p>
               <p>
-                这些范围为教学压力设置；年级用时上限可在此选择，都不是滨河的实测范围或学校标准。各项95%配对区间仅反映随机重复波动，不是全部年级和情景的联合保证。
+                这些数值为示例参数；可选择允许增加的用时。各项95%配对区间仅反映随机重复波动，不是全部年级和情景的联合保证。
               </p>
             </details>
             <div id="scenario-output"></div>
+          </details>
           </details>
         </section>
         <section class="page" id="page-search" aria-labelledby="search-title">
@@ -306,7 +310,7 @@
           <div class="page-heading">
             <div>
               <h1 id="evidence-title">使用说明</h1>
-              <p>面向西安铁一中滨河高级中学的研究示例，尚未用校内实测数据校准。</p>
+              <p>比较三种就餐安排，再确定相邻班组的出发间隔。</p>
             </div>
           </div>
           <div class="evidence-grid">
@@ -329,13 +333,13 @@
               <button class="button primary" data-open-tab="live">开始设置</button>
             </article>
             <article class="panel prose">
-              <span class="tag amber">招生计划人数</span>
+              <span class="tag amber">示例参数</span>
               <h2>当前场景的依据</h2>
               <p>
-                高一580人、高二530人、高三500人，共1610人，按2026、2025、2024年官方招生计划设置。
+                高一580人、高二530人、高三500人，共1610人，作为三年级高中就餐示例。
                 16个窗口、480个座位和放行时刻用于实验比较，可在设置中修改。
               </p>
-              <p>班级按每组约50人划分；布局按学生描述绘制。人数依据招生计划，其他设置可按实际情况调整。</p>
+              <p>按每组约50人划分为33组。人数、打饭速度和布局用于方案比较，可按实际记录修改。</p>
               <button class="button" id="download-observation">下载观察记录模板</button>
             </article>
             <details class="panel prose full">
@@ -354,7 +358,7 @@
                 区间描述模型内随机波动，不包含输入参数不准确的误差。
               </p>
               <p>
-                布局依据项目交流采用两侧窗口、中间座位、前后进出；具体尺寸与两端人流比例为示意。3D 与 2D
+                示例布局采用两侧窗口、中间座位、前后进出；具体尺寸与两端人流比例为示意。3D 与 2D
                 回放同一份计算记录。人物抽样显示，人数指标按全量记录统计；示意面积不能用于计算现实密度。
               </p>
               <a
@@ -366,32 +370,9 @@
             </details>
             <details class="panel prose full">
               <summary>公开资料与项目来源</summary>
-              <p>按2026—2027学年，三个年级人数分别采用对应入学年的官方招生计划；本场景按全员参加一餐计算。</p>
-              <p>
-                <a
-                  href="https://edu.xa.gov.cn/web_files/edu/file/2024/07/18/202407181807215286171.pdf"
-                  target="_blank"
-                  rel="noopener"
-                  >2024年计划：500人 ↗</a
-                >
-                ·
-                <a
-                  href="https://edu.xa.gov.cn/web_files/edu/file/2025/07/18/202507181020453109104.pdf"
-                  target="_blank"
-                  rel="noopener"
-                  >2025年计划：530人 ↗</a
-                >
-              </p>
-              <a
-                href="https://edu.xa.gov.cn/xwzx/tzgg/2077576360413937666.html"
-                target="_blank"
-                rel="noopener"
-                >2026 年普通高中招生计划 ↗</a
-              >
-              <p>2020 年报道提到初三错时用餐和统一配餐，只适用于当时的初中场景。</p>
-              <a href="https://sn.ifeng.com/c/7vTL0IS6iXq" target="_blank" rel="noopener"
-                >2020 年西安日报报道（转载）↗</a
-              >
+              <p>公开学校方案显示，已有按年级分时以及按班级分批的就餐安排。本研究用示例场景直接比较三种规则。</p>
+              <p><a href="https://bwfxnw.bfsu.edu.cn/info/1153/5926.htm" target="_blank" rel="noopener">按年级设置不同午餐起始时刻的公开方案（2013） ↗</a></p>
+              <p><a href="https://lsdfz.lnnu.edu.cn/info/1039/1829.htm" target="_blank" rel="noopener">按班级分批用餐的公开简报（2022） ↗</a></p>
               <p>
                 模型与 3D 基础来自用户提供的 v1.5 项目，经过本地复跑与复核。Three.js 使用 MIT
                 许可。界面与研究层由 AI 辅助编写，学生需如实记录本人完成的研究与协助范围。
@@ -493,6 +474,8 @@
     <script src="rotation-view.js"></script>
     <script src="planner-view.js"></script>
     <script src="parameter-view.js"></script>
+    <script src="schedule-study.js"></script>
+    <script src="schedule-view.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

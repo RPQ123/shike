@@ -16,11 +16,11 @@
     c.students=cohorts.reduce((sum,g)=>sum+g.students,0);
     c.windows=16;c.windowMeans=Array(16).fill(20);c.windowOwners=Array(16).fill(0);
     c.seats=480;c.horizon=120;c.serviceEnd=100;c.seed=20261019;c.indoorWalkSpeed=1.1;
-    c.sourceProfile={id:'binhe-admission-2026-27',title:'滨河 · 招生计划人数',asOf:'2026-10-19',status:'research-assumptions',observedSchoolData:false};
+    c.sourceProfile={id:'generic-school-1610',title:'高中就餐示例 · 1610人',asOf:'2026-10-19',status:'research-assumptions',observedSchoolData:false};
     c.grades.forEach((g,i)=>{
       g.students=cohorts[i].students;g.classes=Math.ceil(g.students/50);
       g.classSizes=null;
-      g.latestReleaseTime=65;g.deadline=100;
+      g.latestReleaseTime=100;g.deadline=100;
     });
     return Common.normalize(c);
   }
