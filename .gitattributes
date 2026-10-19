@@ -1,0 +1,2 @@
+# Preserve the exact asset and dataset bytes recorded by the build hashes.
+* -text
