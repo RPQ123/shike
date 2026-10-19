@@ -1,0 +1,26 @@
+{
+  "library": "three",
+  "version": "0.180.0",
+  "revision": "180",
+  "license": "MIT",
+  "homepage": "https://threejs.org/",
+  "repository": "https://github.com/mrdoob/three.js",
+  "packageSource": "https://registry.npmjs.org/three/-/three-0.180.0.tgz",
+  "packageIntegrity": "sha512-o+qycAMZrh+TsE01GqWUxUIKR1AL0S8pq7zDkYOQw8GqfX8b8VoCKYUoHbhiX5j+7hr8XsuHDVU6+gkQJQKg9w==",
+  "bundledAddons": [
+    "OrbitControls"
+  ],
+  "global": "THREE",
+  "format": "IIFE classic script",
+  "minimumGraphicsAPI": "WebGL 2",
+  "networkNeededAtRuntime": false,
+  "output": "dist/vendor/three.min.js",
+  "outputBytes": 721594,
+  "sha256": "9f3460e3e7473471c5b38c5d1df57ec617884731df729c1c417501c1fcb04aec",
+  "builder": {
+    "name": "esbuild",
+    "version": "0.25.10",
+    "target": "es2020"
+  },
+  "rebuild": "npm ci --prefix tools/three-build && node tools/build-three.cjs"
+}

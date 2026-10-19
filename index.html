@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>食刻 · 校园食堂仿真实验室</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="layout.css" />
+    <link rel="stylesheet" href="studio.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <aside class="rail">
+      <a class="brand" href="#live"><span class="brand-mark" aria-hidden="true">食</span><span>食刻</span></a>
+      <nav aria-label="主要导航">
+        <button data-tab="live" class="nav active">食堂仿真</button
+        ><button data-tab="compare" class="nav">方案比较</button
+        ><button data-tab="search" class="nav">方案筛选</button>
+      </nav>
+      <nav class="secondary-nav" aria-label="帮助与记录">
+        <button data-tab="evidence" class="nav">使用说明</button>
+        <button data-tab="learn" class="nav">研究笔记</button>
+      </nav>
+    </aside>
+    <div class="shell">
+      <header class="topbar">
+        <span>校园食堂仿真 <b id="crumb" class="sr-only">食堂仿真</b></span>
+        <div>
+          <button class="data-note" id="help" aria-label="合成数据，查看模型说明">合成数据 · 说明</button>
+        </div>
+      </header>
+      <main id="main">
+        <section class="page active" id="page-live" aria-labelledby="live-title">
+          <div class="page-heading">
+            <div>
+              <h1 id="live-title">食堂仿真</h1>
+            </div>
+            <div class="actions">
+              <details class="file-menu">
+                <summary class="button">方案文件</summary>
+                <div class="menu-content">
+                  <button id="import" class="text-button">导入场景</button>
+                  <button id="save" class="text-button">保存场景</button>
+                </div>
+              </details>
+              <button id="parameters" class="button primary">设置方案</button>
+            </div>
+          </div>
+          <div class="scenario-bar">
+            <div><b id="scenario-name">三年级教学场景</b><span id="scenario-detail"></span></div>
+            <div class="scenario-links">
+              <button id="guided-compare" class="text-button">开始一次比较 →</button>
+              <button id="example-reset" class="text-button">恢复示例</button>
+            </div>
+          </div>
+          <div class="kpi-grid" id="kpis"></div>
+          <div class="workspace-grid">
+            <article class="scene-panel panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>就餐回放</h2>
+                </div>
+                <div class="segmented" aria-label="场景显示">
+                  <button id="view-3d" class="selected" aria-pressed="true">3D</button
+                  ><button id="view-2d" aria-pressed="false">2D</button>
+                </div>
+                <strong class="clock" id="clock">11:50:00</strong>
+              </div>
+              <div class="scene-toolbar">
+                <span class="legend"
+                  ><i class="g1"></i>高一 <i class="g2"></i>高二 <i class="g3"></i>高三</span
+                >
+                <div>
+                  <button data-camera="perspective" class="text-button">立体</button
+                  ><button data-camera="top" class="text-button">俯视</button
+                  ><button id="peak" class="text-button">排队高峰</button>
+                  <button id="scene-labels" class="text-button" aria-pressed="false">场景信息</button>
+                </div>
+              </div>
+              <div class="playback">
+                <button id="play" class="play-button" aria-label="播放回放">▶</button
+                ><label class="sr-only" for="timeline">回放时间</label
+                ><input id="timeline" type="range" min="0" max="90" step="0.02" value="30" /><label
+                  class="sr-only"
+                  for="speed"
+                  >播放速度</label
+                ><select id="speed">
+                  <option value="0.25">15 倍速</option>
+                  <option value="0.5" selected>30 倍速</option>
+                  <option value="1">60 倍速</option>
+                  <option value="3">180 倍速</option>
+                </select>
+              </div>
+              <div id="scene3d" class="scene-3d minimal-scene"></div>
+              <div id="scene2d" class="scene-2d" hidden></div>
+              <div class="live-counts" id="live-counts"></div>
+              <details class="scene-explanation">
+                <summary>回放说明</summary>
+                <p id="scene-note">场地与人物为示意，人数来自全部模拟记录。</p>
+              </details>
+            </article>
+            <aside class="insights">
+              <article class="panel grade-panel">
+                <div class="panel-heading">
+                  <h2>首班放行</h2>
+                </div>
+                <div id="grade-cards"></div>
+                <button id="edit-grades" class="text-button">修改安排</button>
+              </article>
+              <details class="panel inspector" id="selection-details">
+                <summary>查看单个记录</summary>
+                <p id="inspect-text">点击窗口或学生，查看对应记录。</p>
+                <div id="inspect-detail"></div>
+              </details>
+              <details class="panel metric-explanation">
+                <summary>指标说明与更多结果</summary>
+                <div id="metric-details"></div>
+              </details>
+              <details class="panel assumptions">
+                <summary>模型提示 <span id="warning-count"></span></summary>
+                <div id="warnings"></div>
+                <p>同类窗口可提供相同套餐；不模拟楼梯拥堵、换队或等座区对窗口的反向阻塞。</p>
+              </details>
+            </aside>
+          </div>
+          <article class="panel chart-panel">
+            <div class="panel-heading">
+              <h2>排队人数变化</h2>
+              <details class="file-menu">
+                <summary class="button">导出数据</summary>
+                <div class="menu-content">
+                  <button class="text-button" id="export-students">逐人记录 CSV ↓</button
+                  ><button class="text-button" id="export-run">完整结果 JSON ↓</button>
+                </div>
+              </details>
+            </div>
+            <div id="queue-chart" role="img" aria-label="排队和等座人数曲线"></div>
+            <details class="chart-explanation">
+              <summary>曲线说明</summary>
+              <p id="chart-note"></p>
+            </details>
+          </article>
+        </section>
+        <section class="page" id="page-compare" aria-labelledby="compare-title">
+          <div class="page-heading">
+            <div>
+              <h1 id="compare-title">方案比较</h1>
+              <p>保存当前方案为 A，修改参数作为 B，再比较结果。</p>
+            </div>
+            <button id="export-compare" class="button" disabled>导出实验</button>
+          </div>
+          <ol class="experiment-steps" aria-label="比较步骤">
+            <li data-experiment-step="1"><span>1</span>保存 A</li>
+            <li data-experiment-step="2"><span>2</span>修改 B</li>
+            <li data-experiment-step="3"><span>3</span>查看结果</li>
+          </ol>
+          <div class="compare-setup panel">
+            <div>
+              <span class="tag">方案 A</span>
+              <h2 id="baseline-name">尚未保存</h2>
+              <p id="baseline-detail">保存后，A 会保持不变。</p>
+              <button id="set-baseline" class="button">保存当前方案为 A</button>
+              <details class="inline-option">
+                <summary>其他参照</summary>
+                <button id="sync-baseline" class="text-button">生成同步放行方案</button>
+              </details>
+            </div>
+            <span class="versus">→</span>
+            <div>
+              <span class="tag dark">方案 B</span>
+              <h2>当前方案</h2>
+              <p id="current-detail"></p>
+              <button id="compare-edit" class="button">修改 B</button>
+              <details class="inline-option">
+                <summary>试一个改动</summary>
+                <div class="example-actions">
+                  <button id="try-gap" class="text-button">年级间隔改为3分钟</button>
+                  <button id="try-window" class="text-button">增加1个通用窗口</button>
+                </div>
+              </details>
+            </div>
+            <div class="experiment-control">
+              <label for="repeats">重复次数</label
+              ><select id="repeats">
+                <option value="10">10 轮</option>
+                <option value="30" selected>30 轮</option></select
+              ><button id="compare-run" class="button primary">开始比较</button>
+            </div>
+          </div>
+          <div id="compare-output" class="empty-state">
+            <h2>比较结果将显示在这里</h2>
+            <p>每轮两方案使用相同随机需求，减少随机波动的干扰。</p>
+          </div>
+          <details id="scenario-section" class="panel scenario-check" hidden>
+            <summary>检查参数变化</summary>
+            <p>两方案一起改变打餐速度，看看结论是否随假设改变。</p>
+            <div class="scenario-controls">
+              <label for="grade-limit"
+                >年级增加用时上限
+                <select id="grade-limit">
+                  <option value="0">0 秒</option>
+                  <option value="0.5" selected>30 秒</option>
+                  <option value="1">60 秒</option>
+                </select>
+              </label>
+              <label for="scenario-repeats"
+                >每个情景
+                <select id="scenario-repeats">
+                  <option value="10">10 轮</option>
+                  <option value="30">30 轮</option>
+                </select>
+              </label>
+              <button id="scenario-run" class="button primary">开始情景检查</button>
+              <button id="export-scenarios" class="button" disabled>导出情景数据</button>
+            </div>
+            <p id="scenario-stale" class="notice" hidden>比较参数已改变，请先重新比较 A/B，再检查情景。</p>
+            <details class="scenario-method">
+              <summary>情景和阈值怎么设定</summary>
+              <p>服务用时取当前值的0.8、1、1.2倍，共3组情景。所有窗口都能服务所有学生。</p>
+              <p>
+                这些范围为教学压力设置；年级用时上限可在此选择，都不是滨河的实测范围或学校标准。各项95%配对区间仅反映随机重复波动，不是全部年级和情景的联合保证。
+              </p>
+            </details>
+            <div id="scenario-output"></div>
+          </details>
+        </section>
+        <section class="page" id="page-search" aria-labelledby="search-title">
+          <div class="page-heading">
+            <div>
+              <h1 id="search-title">方案筛选</h1>
+              <p>让班级交错出发，找到适合现有窗口与座位的安排。</p>
+            </div>
+          </div>
+          <div class="panel planner-start">
+            <div>
+              <span class="eyebrow">班级排程</span>
+              <h2>把错峰安排到每个班</h2>
+              <p>比较三种目标，生成可直接回放的放行表。</p>
+            </div>
+            <button id="planner-run" class="button primary">
+              生成放行方案 <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+          <details class="planner-options panel">
+            <summary>排程偏好</summary>
+            <div class="planner-option-grid">
+              <label
+                >均衡方案允许的平均用时增加<select id="planner-mean">
+                  <option value="0">不增加</option>
+                  <option value="0.5" selected>最多 30 秒</option>
+                  <option value="1">最多 1 分钟</option>
+                </select></label
+              >
+              <label
+                >允许的排队峰值增加<select id="planner-peak">
+                  <option value="0" selected>不增加</option>
+                  <option value="0.1">最多 10%</option>
+                  <option value="0.2">最多 20%</option>
+                </select></label
+              >
+              <label
+                >相邻班级间隔<select id="planner-slots">
+                  <option value="fine">0 / 15 / 30 / 45 / 60 秒</option>
+                  <option value="coarse">0 / 30 / 60 秒</option>
+                </select></label
+              >
+            </div>
+            <p>窗口总数与各窗速度保持不变。所有学生都可使用任意窗口，年级首班锁定与末班限制保持生效。</p>
+          </details>
+          <p id="planner-stale" class="notice" role="status" hidden>当前参数已改变，请重新生成放行方案。</p>
+          <div id="planner-output" class="empty-state">
+            <div class="empty-schedule" aria-hidden="true"><i></i><i></i><i></i></div>
+            <h2>从一张更好的放行表开始</h2>
+            <p>人数与资源沿用当前仿真设置。</p>
+          </div>
+          <details id="legacy-search" class="legacy-search panel">
+            <summary>按年级间隔筛选</summary>
+            <div class="search-setup">
+              <div>
+                <h2>年级间隔：0—4 分钟</h2>
+                <p>每隔 1 分钟取一个候选；保留年级顺序和放行限制。</p>
+              </div>
+              <button id="search-run" class="button primary">开始筛选</button>
+            </div>
+            <details class="search-method">
+              <summary>筛选方法与适用条件</summary>
+              <p>人数、通用窗口总数、座位与服务速度不变，只改变年级放行间隔。</p>
+              <p>
+                每个候选运行 10 轮，再用另外 30
+                轮复核。候选同时比较完整用时、排队与年级差，保留各有取舍的方案；结果只适用于输入假设，不代表现实最优。
+              </p>
+            </details>
+            <p id="search-stale" class="notice" role="status" hidden>
+              参数已改变，下方为上次筛选结果。请重新筛选以更新候选。
+            </p>
+            <div id="search-output" class="empty-state">
+              <h2>候选方案将显示在这里</h2>
+              <p>筛选后可以逐个复核，再载入仿真观察。</p>
+            </div>
+          </details>
+        </section>
+        <section class="page" id="page-evidence" aria-labelledby="evidence-title">
+          <div class="page-heading">
+            <div>
+              <h1 id="evidence-title">使用说明</h1>
+              <p>面向西安铁一中滨河高级中学的研究示例，尚未用校内实测数据校准。</p>
+            </div>
+          </div>
+          <div class="evidence-grid">
+            <article class="panel prose quick-start">
+              <h2>完成一次实验</h2>
+              <ol>
+                <li>
+                  <b>设置方案</b>
+                  <p>填写人数、放行时间、窗口与座位，运行后观察排队和完整用时。</p>
+                </li>
+                <li>
+                  <b>比较两种安排</b>
+                  <p>保存 A，再修改 B。重复运行后查看差值及各年级结果。</p>
+                </li>
+                <li>
+                  <b>保存研究记录</b>
+                  <p>导出实验数据，在研究笔记中写下改动、结果与疑问。</p>
+                </li>
+              </ol>
+              <button class="button primary" data-open-tab="live">开始设置</button>
+            </article>
+            <article class="panel prose">
+              <span class="tag amber">招生计划人数</span>
+              <h2>当前场景的依据</h2>
+              <p>
+                高一580人、高二530人、高三500人，共1610人，按2026、2025、2024年官方招生计划设置。
+                16个窗口、480个座位和放行时刻用于实验比较，可在设置中修改。
+              </p>
+              <p>班级按每组约50人划分；布局按学生描述绘制。人数依据招生计划，其他设置可按实际情况调整。</p>
+              <button class="button" id="download-observation">下载观察记录模板</button>
+            </article>
+            <details class="panel prose full">
+              <summary>计算方法与指标</summary>
+              <p>
+                模型按事件发生顺序计算：班级放行 → 步行到达 → 预计取餐完成最早的窗口排队 → 取餐 → 等座用餐 →
+                返程。
+              </p>
+              <div class="formula">完整用时 = 放行延后 + 集合步行 + 排队 + 取餐 + 等座 + 用餐 + 返程</div>
+              <p>
+                完整用时从各年级最早允许放行起算，按时完成以配置的返程截止时刻判断。P95 排队为 95%
+                分位；年级差为各年级平均完整用时的最大值减最小值，不能单独代表公平。
+              </p>
+              <p>
+                每轮 A / B 使用相同种子生成随机需求。差值为 B − A；95%
+                区间描述模型内随机波动，不包含输入参数不准确的误差。
+              </p>
+              <p>
+                布局依据项目交流采用两侧窗口、中间座位、前后进出；具体尺寸与两端人流比例为示意。3D 与 2D
+                回放同一份计算记录。人物抽样显示，人数指标按全量记录统计；示意面积不能用于计算现实密度。
+              </p>
+              <a
+                href="https://simpy.readthedocs.io/en/stable/simpy_intro/basic_concepts.html"
+                target="_blank"
+                rel="noopener"
+                >离散事件仿真参考 ↗</a
+              >
+            </details>
+            <details class="panel prose full">
+              <summary>公开资料与项目来源</summary>
+              <p>按2026—2027学年，三个年级人数分别采用对应入学年的官方招生计划；本场景按全员参加一餐计算。</p>
+              <p>
+                <a
+                  href="https://edu.xa.gov.cn/web_files/edu/file/2024/07/18/202407181807215286171.pdf"
+                  target="_blank"
+                  rel="noopener"
+                  >2024年计划：500人 ↗</a
+                >
+                ·
+                <a
+                  href="https://edu.xa.gov.cn/web_files/edu/file/2025/07/18/202507181020453109104.pdf"
+                  target="_blank"
+                  rel="noopener"
+                  >2025年计划：530人 ↗</a
+                >
+              </p>
+              <a
+                href="https://edu.xa.gov.cn/xwzx/tzgg/2077576360413937666.html"
+                target="_blank"
+                rel="noopener"
+                >2026 年普通高中招生计划 ↗</a
+              >
+              <p>2020 年报道提到初三错时用餐和统一配餐，只适用于当时的初中场景。</p>
+              <a href="https://sn.ifeng.com/c/7vTL0IS6iXq" target="_blank" rel="noopener"
+                >2020 年西安日报报道（转载）↗</a
+              >
+              <p>
+                模型与 3D 基础来自用户提供的 v1.5 项目，经过本地复跑与复核。Three.js 使用 MIT
+                许可。界面与研究层由 AI 辅助编写，学生需如实记录本人完成的研究与协助范围。
+              </p>
+              <p>更多资料核验与许可说明见配套研究包中的 research、PROVENANCE.txt 与 licenses 目录。</p>
+            </details>
+          </div>
+        </section>
+        <section class="page" id="page-learn" aria-labelledby="learn-title">
+          <div class="page-heading">
+            <div>
+              <h1 id="learn-title">研究笔记</h1>
+              <p>记录这一轮的问题、修改和结果。</p>
+            </div>
+          </div>
+          <div class="learning-grid">
+            <article class="panel prose">
+              <h2>本轮记录</h2>
+              <label for="research-note">问题、改动、结果与疑问</label
+              ><textarea
+                id="research-note"
+                rows="7"
+                placeholder="例如：我把年级间隔从2分钟改为4分钟。运行前预测……运行后看到……需要进一步检查……"
+              ></textarea>
+              <div class="actions">
+                <button id="save-note" class="button">保存到本机</button
+                ><button id="export-note" class="button primary">导出记录</button>
+              </div>
+              <p class="note-storage">记录仅保存在当前浏览器，建议导出备份。</p>
+            </article>
+            <article class="panel prose">
+              <h2>三个学生，一个窗口</h2>
+              <p>三人同时到达，每人取餐 10 秒。开始服务分别在第 0、10、20 秒；排队分别为 0、10、20 秒。</p>
+              <div class="formula">平均排队 = (0 + 10 + 20) ÷ 3 = 10 秒</div>
+              <p>
+                如果三人改为第 0、10、20
+                秒依次到达，每人的现场排队都为零；但从共同允许时刻算起，完成取餐仍在第 10、20、30
+                秒。为什么排队少了，却没有更早完成？
+              </p>
+              <details>
+                <summary>例子的适用范围</summary>
+                <p>此处忽略步行与用餐，可用配套 Python 教学模型验证；主仿真还包含通用窗口、座位与返程。</p>
+              </details>
+              <button id="learning-example" class="button">返回仿真</button>
+            </article>
+            <details class="panel prose full">
+              <summary>研究自查：五个问题</summary>
+              <ol>
+                <li>为什么要同时看排队时间和完整用时？</li>
+                <li>同一随机种子怎样让两种方案的比较更公平？</li>
+                <li>某年级等待变少，是否可能让另一年级更晚完成？</li>
+                <li>如果食堂统一送餐，当前模型哪里不再适用？</li>
+                <li>哪些工作是你亲自完成的，哪些由教师、参考项目或 AI 协助？</li>
+              </ol>
+            </details>
+          </div>
+        </section>
+        <footer>
+          <span id="status" role="status" aria-live="polite">准备就绪</span>
+        </footer>
+      </main>
+    </div>
+    <dialog id="parameter-dialog" aria-labelledby="parameter-title">
+      <form id="parameter-form">
+        <div class="dialog-heading">
+          <div>
+            <h2 id="parameter-title">设置方案</h2>
+          </div>
+          <button type="button" id="close-parameters" class="icon-button" aria-label="关闭参数设置">×</button>
+        </div>
+        <p class="notice">下列参数用于模拟，请按实际情况修改。</p>
+        <div id="parameter-fields"></div>
+        <p class="error" id="parameter-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button type="button" id="cancel-parameters" class="button">取消</button
+          ><button type="submit" class="button primary">运行这个方案</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="message-dialog" aria-labelledby="message-title" aria-describedby="message-body">
+      <h2 id="message-title">提示</h2>
+      <p id="message-body"></p>
+      <button id="message-close" class="button primary">知道了</button>
+    </dialog>
+    <input type="file" id="file-input" accept=".json,application/json" hidden />
+    <script src="build-info.js"></script>
+    <script src="vendor/three.min.js"></script>
+    <script src="engine.js"></script>
+    <script src="hall-walk.js"></script>
+    <script src="school-engine.js"></script>
+    <script src="common-windows.js"></script>
+    <script src="scene-state.js"></script>
+    <script src="canteen3d.js"></script>
+    <script src="research.js"></script>
+    <script src="binhe-cohort.js"></script>
+    <script src="decision-support.js"></script>
+    <script src="planner.js"></script>
+    <script src="rotation.js"></script>
+    <script src="rotation-view.js"></script>
+    <script src="planner-view.js"></script>
+    <script src="parameter-view.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

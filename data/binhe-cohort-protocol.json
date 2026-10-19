@@ -1,0 +1,23 @@
+{
+  "schema":"binhe-cohort-study/1",
+  "schoolYear":"2026–2027",
+  "cohortCounts":[580,530,500],
+  "countBasis":"2026, 2025 and 2024 official admission plans; assume all attend one meal, as requested by the user.",
+  "resourceBasis":"16 universal windows and 480 seats are adjustable test resources, not verified school inventory. Mean service 20 seconds and meal 10 minutes give matching average capacities of 48 persons/minute.",
+  "classBasis":"Split each cohort into groups of at most 50. The derived 12/11/10 groups are not asserted actual school classes.",
+  "screenSeeds":{"start":2390001,"count":10},
+  "verifySeeds":{"start":2400001,"count":30},
+  "controlSeeds":{"start":2410001,"count":30},
+  "periodSeeds":{"start":2420001,"count":90},
+  "slots":[0,0.25,0.5,0.75,1],
+  "criteria":{"meanAllowance":0.5,"peakAllowance":0},
+  "cases":[
+    {"id":"windows-8","windows":8,"seats":480},
+    {"id":"windows-12","windows":12,"seats":480},
+    {"id":"reference","windows":16,"seats":480},
+    {"id":"seats-320","windows":16,"seats":320},
+    {"id":"seats-640","windows":16,"seats":640}
+  ],
+  "periodModes":["fixed","cyclic","feedback"],
+  "prediction":"More windows should reduce pickup queues, but seats may absorb some of that reduction. More seats should reduce seat waiting without changing pickup queues. Alternating first cohorts may reduce repeated disadvantages."
+}
