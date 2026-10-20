@@ -1,6 +1,6 @@
 {
   "version": "2.5.0",
-  "edition": "视觉精修与交互修正版",
+  "edition": "统一提交版",
   "build": "fee65d0b8d528dc3",
   "executions": 660,
   "selectedSeconds": 70,
@@ -8,22 +8,22 @@
   "resultsSha256": "591d7542864ee7b068c078e1b06b8df1c05923221904cad09e040b62b225e2dd",
   "packages": [
     {
-      "file": "校园食堂研究_视觉精修与交互修正版_提交材料.zip",
-      "bytes": 10446099,
-      "sha256": "5d5ce4f6aad2adecbeb1f67912f8303de90b7d6a03d93b8876c5f28b878d57d4",
-      "entries": 25
+      "file": "校园食堂研究_统一提交版_提交材料.zip",
+      "bytes": 10590543,
+      "sha256": "4de6406f392924d7aa1543c4fb280b982cc17bca3eae93b6aa7126d69c29977f",
+      "entries": 29
     },
     {
-      "file": "校园食堂研究_视觉精修与交互修正版_Windows与离线网页.zip",
+      "file": "校园食堂研究_统一提交版_Windows与离线网页.zip",
       "bytes": 24266333,
-      "sha256": "50013bfc68a4fc297a377b24b7551a532ce6e0008a9379685e5c92d30d397dba",
+      "sha256": "84c0f9f42cdfd0adaf29b297b6d0cc650e8213dc0a5aecae2bec88ac1e99183e",
       "entries": 186
     },
     {
-      "file": "校园食堂研究_视觉精修与交互修正版_源码与研究记录.zip",
-      "bytes": 18116208,
-      "sha256": "7c746466dc2554bea6b673314339bfc6b7205ec5e8adba0259c701fb5b737fd0",
-      "entries": 345
+      "file": "校园食堂研究_统一提交版_源码与研究记录.zip",
+      "bytes": 18118906,
+      "sha256": "0b768f3a84aa4df541636b8b910cbdf246c290e6beb93eb45312fe126fda9123",
+      "entries": 347
     }
   ]
 }
