@@ -305,10 +305,16 @@
     });
     answer.seatWaitingDrawn = drawIndex;
     returning.sort(function (a,b) { return b.mealEnd - a.mealEnd || a.id - b.id; });
-    returning.slice(0, DEPARTURE_LIMIT).forEach(function (s) {
+    returning.forEach(function (s) {
       var actualSeatZone=s.seatZone===undefined||s.seatZone===null?(s.zone||0):s.seatZone;
-      var zoneSeats=zoneDisplaySeats[actualSeatZone],seat = seatMap.get(s.seatId) || zoneSeats[s.seatId % zoneSeats.length];
-      var route = returnRoute(layout, seat), progress = Math.min(1, (time - s.mealEnd) / Math.max(1e-9, s.returnTime - s.mealEnd));
+      var zoneSeats=zoneDisplaySeats[actualSeatZone],seat = layout.displaySeats[s.displaySeatId] || seatMap.get(s.seatId) || zoneSeats[s.seatId % zoneSeats.length];
+      var route = returnRoute(layout, seat), length = samplePath(route, 1).length;
+      // Indoor departure uses the same metres/second and per-student pace as
+      // counter-to-seat travel. Remaining return time happens outside the hall.
+      var pace = c.indoorWalkSpeed * (.94 + (s.id % 13) * .01);
+      var duration = pace > 0 ? length / pace / 60 : s.returnTime - s.mealEnd;
+      var progress = (time - s.mealEnd) / Math.max(1e-9, duration);
+      if (progress >= 1 || answer.departures.length >= DEPARTURE_LIMIT) return;
       var motion = samplePath(route, progress), p = basePerson(s, 'returning', motion.position);
       p.yaw = motion.yaw; p.route = route; p.routeDistance = motion.distance; p.visualTransition = true; p.visualProgress = progress;p.seatId=s.seatId;p.seatZone=actualSeatZone;p.seatPool=layout.seatPoolByZone[actualSeatZone];
       answer.departures.push(p);

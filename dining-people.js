@@ -75,7 +75,7 @@
         this.transform('shadow',i,[0,-.012-pos[1],0],[-Math.PI/2,0,0],[1.05,1.05,1]);
       });
       for(const [key,mesh] of Object.entries(this.parts)){mesh.count=this.sparse.has(key)?this.sparseCounts[key]:this.items.length;mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;}
-      this.parts.head.boundingSphere=null;this.parts.body.boundingSphere=null;
+      for(const [name,mesh] of Object.entries(this.parts))if(name!=='shadow'&&!this.sparse.has(name))mesh.boundingSphere=null;
     }
   }
   window.DiningPeople=DiningPeople;

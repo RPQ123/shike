@@ -267,6 +267,9 @@
     if (item.type === 'student') {
       const s = state.result.students.find((x) => x.id === item.id);
       if (!s) return;
+      state.playing = false;
+      updatePlay();
+      renderFrame();
       title = `模拟学生 ${s.id + 1} · ${s.gradeName}`;
       rows = [
         ['放行', clock(s.release)],

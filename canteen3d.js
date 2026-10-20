@@ -154,8 +154,12 @@
       this.controls.addEventListener('start',()=>options.onCameraChange?.());
       this.raycaster=new T.Raycaster();this.pointer=new T.Vector2();
       const canvas=this.renderer.domElement;
-      canvas.addEventListener('pointerdown',e=>{this.pointerStart={x:e.clientX,y:e.clientY};});
-      canvas.addEventListener('pointerup',e=>{if(this.pointerStart&&Math.hypot(e.clientX-this.pointerStart.x,e.clientY-this.pointerStart.y)<5)this.pick(e);this.pointerStart=null;});
+      canvas.addEventListener('pointerdown',e=>{this.pointerStart={x:e.clientX,y:e.clientY,id:this.studentAt(e)};});
+      canvas.addEventListener('pointerup',e=>{
+        const start=this.pointerStart;this.pointerStart=null;
+        if(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<5)this.pick(e,start.id);
+      });
+      canvas.addEventListener('pointercancel',()=>{this.pointerStart=null;});
       canvas.addEventListener('keydown',e=>{
         if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','0'].includes(e.key)){e.preventDefault();
           if(e.key==='0')this.setCamera('perspective');
@@ -451,16 +455,26 @@
       this.renderer.render(this.scene,this.camera);if(moving&&this.playing)this.invalidate();
     }
     invalidate() {if(this.active&&!this.frameHandle)this.frameHandle=root.requestAnimationFrame(now=>{this.frameHandle=0;this.renderNow(now);});}
-    pick(event) {
-      if(!this.crowd)return;const rect=this.renderer.domElement.getBoundingClientRect();this.pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);this.raycaster.setFromCamera(this.pointer,this.camera);
-      const hits=this.raycaster.intersectObjects([this.crowd.parts.head,this.crowd.parts.body],false);
-      if(hits.length){const p=this.crowd.items[hits[0].instanceId];this.selectStudent(p.id);this.options.onSelect?.({type:'student',id:p.id});this.invalidate();}
+    studentAt(event) {
+      if(!this.crowd)return null;
+      const rect=this.renderer.domElement.getBoundingClientRect();
+      this.pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);
+      this.camera.updateMatrixWorld();this.scene.updateMatrixWorld(true);
+      this.raycaster.setFromCamera(this.pointer,this.camera);
+      // Non-sparse body parts share the same instance-to-student index.
+      const parts=Object.entries(this.crowd.parts).filter(([name])=>name!=='shadow'&&!this.crowd.sparse.has(name)).map(([,mesh])=>mesh);
+      const hits=this.raycaster.intersectObjects(parts,false);
+      return hits.length?(this.crowd.items[hits[0].instanceId]?.id??null):null;
+    }
+    pick(event,pressedId=null) {
+      const id=pressedId??this.studentAt(event);
+      if(id!==null){this.selectStudent(id);this.options.onSelect?.({type:'student',id});this.invalidate();}
     }
     clearSelection(){this.selectedId=null;this.invalidate();}
     getPickTargets(){
       if(!this.crowd)return [];
       const matrix=new T.Matrix4(),point=new T.Vector3();
-      return this.crowd.items.slice(0,12).map((p,i)=>{this.crowd.parts.head.getMatrixAt(i,matrix);point.setFromMatrixPosition(matrix).applyMatrix4(this.crowd.parts.head.matrixWorld).project(this.camera);return {id:p.id,x:(point.x*.5+.5)*this.width,y:(-.5*point.y+.5)*this.height};});
+      return this.crowd.items.slice(0,12).map((p,i)=>{this.crowd.parts.head.getMatrixAt(i,matrix);point.setFromMatrixPosition(matrix).applyMatrix4(this.crowd.parts.head.matrixWorld).project(this.camera);const head={id:p.id,x:(point.x*.5+.5)*this.width,y:(-.5*point.y+.5)*this.height};this.crowd.parts.leftShin.getMatrixAt(i,matrix);point.setFromMatrixPosition(matrix).applyMatrix4(this.crowd.parts.leftShin.matrixWorld).project(this.camera);return {...head,legX:(point.x*.5+.5)*this.width,legY:(-.5*point.y+.5)*this.height};});
     }
     dispose(){this.setActive(false);this.observer?.disconnect();root.removeEventListener('resize',this.resizeHandler);this.controls.dispose();this.disposeWorld();this.environmentTarget?.dispose();this.renderer.dispose();this.renderer.domElement.remove();this.labels.remove();}
   }
