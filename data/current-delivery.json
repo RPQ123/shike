@@ -1,29 +1,29 @@
 {
   "version": "2.5.0",
-  "edition": "统一提交版",
-  "build": "fee65d0b8d528dc3",
+  "edition": "简洁清晰版",
+  "build": "08caae3fc0c312b2",
   "executions": 660,
   "selectedSeconds": 70,
-  "reportPdfSha256": "8955290da8d69b32f38c9555eca9d26d82a04024c6e09c2a4d9a72483fdafc7a",
+  "reportPdfSha256": "fad754b8fa7e72a6bd0295f51d51752a7c866bd3a7b7738689686fbb215d3bfe",
   "resultsSha256": "591d7542864ee7b068c078e1b06b8df1c05923221904cad09e040b62b225e2dd",
   "packages": [
     {
-      "file": "校园食堂研究_统一提交版_提交材料.zip",
-      "bytes": 10590543,
-      "sha256": "4de6406f392924d7aa1543c4fb280b982cc17bca3eae93b6aa7126d69c29977f",
+      "file": "校园食堂研究_简洁清晰版_提交材料.zip",
+      "bytes": 10688214,
+      "sha256": "49aebd6ba5170c7cfefc38808e940f85caf8b36bc2f0e3200b9957c07d59a585",
       "entries": 29
     },
     {
-      "file": "校园食堂研究_统一提交版_Windows与离线网页.zip",
-      "bytes": 24266333,
-      "sha256": "84c0f9f42cdfd0adaf29b297b6d0cc650e8213dc0a5aecae2bec88ac1e99183e",
+      "file": "校园食堂研究_简洁清晰版_Windows与离线网页.zip",
+      "bytes": 24356906,
+      "sha256": "9f31c72d6889d28d1e9281b501c955823d019cd32ac0e6f5f9189f2f666780cb",
       "entries": 186
     },
     {
-      "file": "校园食堂研究_统一提交版_源码与研究记录.zip",
-      "bytes": 18118906,
-      "sha256": "0b768f3a84aa4df541636b8b910cbdf246c290e6beb93eb45312fe126fda9123",
-      "entries": 347
+      "file": "校园食堂研究_简洁清晰版_源码与研究记录.zip",
+      "bytes": 18165990,
+      "sha256": "6808f2b3215c9825fcc237a0900cd1b4b302d3561782f2cec6481801e6fbd644",
+      "entries": 349
     }
   ]
 }

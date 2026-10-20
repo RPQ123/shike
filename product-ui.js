@@ -2,6 +2,12 @@
 (() => {
   'use strict';
   const paths={
+    cube:'<path d="m12 3 9 5v8l-9 5-9-5V8Zm0 9 9-4M12 12 3 8M12 12v9M7.5 5.5l9 5"/>',
+    top:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>',
+    chart:'<path d="M4 3v17h17M7 14l4-5 4 3 6-8"/>',
+    download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',
+    info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/>',
+    locate:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
     play:'<path d="m9 6 9 6-9 6Z"/>',pause:'<path d="M9 5v14M15 5v14"/>',
     document:'<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8Z"/><path d="M14 3v6h5M9 13h6M9 17h6"/>',
     settings:'<path d="m9 3-.6 2.2L6 6l-2.1-.6L2.4 8l1.6 1.7-.2 2.5L2 14l1.5 2.6 2.3-.4L8 17.5 9 20h3l1-2.5 2.2-1.3 2.3.4L19 14l-1.8-1.8-.2-2.5L18.6 8l-1.5-2.6L15 6l-2.4-.8L12 3Z"/><circle cx="10.5" cy="11.5" r="3"/>',

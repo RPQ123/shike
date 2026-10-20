@@ -27,8 +27,8 @@
   };
   const names = {
     setup: '选择方案',
-    live: '过程展示',
-    compare: '结果展示',
+    live: '运行过程',
+    compare: '仿真结果',
     search: '方案筛选',
     evidence: '使用说明',
     learn: '研究笔记'
@@ -141,8 +141,6 @@
     prepareScene();
     renderFrame();
     renderChart();
-    if (state.comparison) renderComparison();
-    renderGuide();
     scheduleUI?.onConfigChange();
     updateSearchState();
     plannerUI?.onConfigChange();
@@ -159,16 +157,15 @@
       c = state.config;
     $('scenario-name').textContent = (c.sourceProfile?.title || '自定义场景').replace(/\s*·\s*合成参数$/, '');
     $('scenario-detail').textContent = `${c.students} 人 · ${c.windows} 窗口 · ${c.seats} 座位`;
-    $('current-detail').textContent = describe(c);
     const cards = [
-      ['平均就餐排队时间', m.meanWait, '分'],
-      ['平均完整用时', m.meanTotal, '分'],
-      ['按时返回', m.onTime * 100, '%']
+      ['平均就餐排队时间', m.meanWait, '分', 'clock'],
+      ['平均完整用时', m.meanTotal, '分', 'walk'],
+      ['按时返回', m.onTime * 100, '%', 'check']
     ];
     $('kpis').innerHTML = cards
       .map(
-        ([label, value, unit]) =>
-          `<div class="kpi"><div class="label">${label}</div><strong>${f(value, 1)}</strong><span class="unit">${unit}</span></div>`
+        ([label, value, unit, icon]) =>
+          `<div class="kpi"><div class="label">${DiningIcons(icon)}${label}</div><strong>${f(value, 1)}</strong><span class="unit">${unit}</span></div>`
       )
       .join('');
     $('metric-details').innerHTML =
@@ -428,39 +425,6 @@
     }
     return Common.normalize(c);
   }
-  function setBaseline(c, label) {
-    state.baseline = Common.normalize(c);
-    $('baseline-name').textContent = label;
-    $('baseline-detail').textContent = describe(c);
-    if (state.comparison) renderComparison();
-    renderGuide();
-    status('已保存方案 A；后续修改不会改变它');
-  }
-  function renderGuide() {
-    const finished =
-      state.comparison &&
-      state.baseline &&
-      !R.changes(state.comparison.configA, state.baseline).length &&
-      !R.changes(state.comparison.configB, state.config).length &&
-      state.comparison.configB.seed === state.config.seed;
-    const stage = finished ? 4 : !state.baseline ? 1 : R.changes(state.baseline, state.config).length ? 3 : 2;
-    document.querySelectorAll('[data-experiment-step]').forEach((item) => {
-      const step = Number(item.dataset.experimentStep);
-      item.classList.toggle('complete', step < stage);
-      if (step === stage) item.setAttribute('aria-current', 'step');
-      else item.removeAttribute('aria-current');
-    });
-  }
-  function comparisonIsCurrent() {
-    const d = state.comparison;
-    return !!(
-      d &&
-      state.baseline &&
-      !R.changes(d.configA, state.baseline).length &&
-      !R.changes(d.configB, state.config).length &&
-      d.configB.seed === state.config.seed
-    );
-  }
   function decisionInsight(d) {
     const assessment = d.decision;
     const affected = assessment.mostAffected;
@@ -510,86 +474,8 @@
   function busy(value) {
     state.busy = value;
     if (value) state.cancelRequested = false;
-    for (const id of [
-      'compare-run',
-      'search-run',
-      'parameters',
-      'set-baseline',
-      'sync-baseline',
-      'example-reset',
-      'import',
-      'guided-compare',
-      'try-gap',
-      'try-window',
-      'compare-edit',
-      'scenario-run',
-      'scenario-repeats',
-      'grade-limit'
-    ])
-      $(id).disabled = value;
-    if (!value) $('scenario-run').disabled = !comparisonIsCurrent();
+    for (const id of ['search-run','parameters','example-reset','guided-compare']) $(id).disabled = value;
     plannerUI?.updateDisabled(value);
-  }
-  async function pairedRun() {
-    if (!state.baseline) {
-      message('先保存方案 A', '点击“保存当前方案为 A”，再修改 B。');
-      return;
-    }
-    const a = R.clone(state.baseline),
-      b = R.clone(state.config),
-      count = Number($('repeats').value),
-      seeds = R.seedSets(b.seed, count, 2).screening;
-    busy(true);
-    state.comparison = null;
-    state.scenarioCheck = null;
-    $('scenario-output').replaceChildren();
-    $('scenario-section').hidden = true;
-    $('export-scenarios').disabled = true;
-    renderGuide();
-    $('export-compare').disabled = true;
-    state.playing = false;
-    updatePlay();
-    $('compare-output').className = 'panel comparison-result';
-    $('compare-output').innerHTML =
-      '<div class="progress-wrap"><h2>正在比较两个方案…</h2><progress id="compare-progress" max="' +
-      count +
-      '" value="0"></progress></div>';
-    addCancel('compare-progress');
-    try {
-      const ra = [],
-        rb = [];
-      for (let i = 0; i < count; i++) {
-        ra.push(R.metrics(E.simulateSchool({ ...a, seed: seeds[i] })));
-        rb.push(R.metrics(E.simulateSchool({ ...b, seed: seeds[i] })));
-        $('compare-progress').value = i + 1;
-        await yieldUI();
-      }
-      const differences = {};
-      for (const key of ['meanWait', 'meanTotal', 'p95Wait', 'gradeGap'])
-        differences[key] = R.paired(
-          ra.map((x) => x[key]),
-          rb.map((x) => x[key])
-        );
-      state.comparison = {
-        schema: 'dining-comparison/2',
-        build: window.DiningLabBuild || null,
-        evidence: 'synthetic',
-        configA: a,
-        configB: b,
-        seeds,
-        A: { rounds: ra, ...R.summarize(ra) },
-        B: { rounds: rb, ...R.summarize(rb) },
-        differences
-      };
-      renderComparison();
-      renderGuide();
-      $('export-compare').disabled = false;
-      status('比较完成 · ' + count + ' 轮');
-    } catch (error) {
-      experimentError('compare-output', '实验未完成', error);
-    } finally {
-      busy(false);
-    }
   }
   function gradeComparison(configA, configB, a, b) {
     return `<div class="result-note"><h3>各年级结果</h3><p>各轮均值；无人年级显示“—”。</p></div><div class="result-table" tabindex="0" role="region" aria-label="结果表，窄屏可横向滚动"><table><thead><tr><th>年级</th><th>人数 A / B</th><th>完整用时 A → B / 分</th><th>按时完成 A → B</th></tr></thead><tbody>${configA.grades
@@ -601,140 +487,6 @@
         return `<tr><td>${escape(g.name)}${g.name !== configB.grades[i].name ? ' → ' + escape(configB.grades[i].name) : ''}</td><td>${countA} / ${countB}</td><td>${value(a, `grade${i}Total`, countA)} → ${value(b, `grade${i}Total`, countB)}</td><td>${value(a, `grade${i}OnTime`, countA, true)} → ${value(b, `grade${i}OnTime`, countB, true)}</td></tr>`;
       })
       .join('')}</tbody></table></div>`;
-  }
-  function renderComparison() {
-    const d = state.comparison,
-      rows = [
-        ['平均排队', 'meanWait'],
-        ['平均完整用时', 'meanTotal'],
-        ['P95 排队', 'p95Wait'],
-        ['年级完整用时差', 'gradeGap']
-      ];
-    d.decisionVersion = D.VERSION;
-    d.decision = D.assess(d.configA, d.configB, d.A.rounds, d.B.rounds, Number($('grade-limit').value));
-    let headline = d.differences.meanTotal.mean < 0 ? 'B 的平均完整用时更短' : 'B 的平均完整用时未缩短';
-    if (d.differences.meanWait.mean < 0 && d.differences.meanTotal.mean > 0)
-      headline = '排队减少，完整用时增加';
-    if (d.differences.meanTotal.mean === 0) headline = '两方案的平均完整用时相同';
-    const interval = d.differences.meanTotal,
-      interpretation =
-        interval.low === 0 && interval.high === 0
-          ? '完整用时的逐轮配对差值均为零。'
-          : interval.low <= 0 && interval.high >= 0
-            ? '完整用时差值区间包含零，本次样本不足以明确区分两方案。'
-            : interval.high < 0
-              ? '完整用时差值区间整体小于零，本次模型样本支持均值下降。'
-              : '完整用时差值区间整体大于零，本次模型样本显示均值增加。';
-    const stale =
-      R.changes(d.configB, state.config).length ||
-      d.configB.seed !== state.config.seed ||
-      !state.baseline ||
-      R.changes(d.configA, state.baseline).length;
-    $('compare-output').innerHTML =
-      `<div class="result-heading"><span class="result-meta">${d.seeds.length} 轮配对比较</span><h2>${headline}</h2>${stale ? '<p class="notice">参数已改变，下方为上次结果，请重新比较。</p>' : ''}<p>${interpretation}</p><p>差值 = B − A；负数表示下降。</p></div>${decisionInsight(d)}<div class="result-table" tabindex="0" role="region" aria-label="结果表，窄屏可横向滚动"><table><thead><tr><th>指标 / 分钟</th><th>A 均值</th><th>B 均值</th><th>B − A</th><th>配对差值 95% 区间</th></tr></thead><tbody>${rows
-        .map(([label, k]) => {
-          const v = d.differences[k];
-          return `<tr><td>${label}</td><td>${f(d.A[k])}</td><td>${f(d.B[k])}</td><td class="${v.mean < 0 ? 'good' : v.mean > 0 ? 'bad' : 'neutral'}">${v.mean > 0 ? '+' : ''}${f(v.mean)}</td><td>[${f(v.low)}, ${f(v.high)}]</td></tr>`;
-        })
-        .join(
-          ''
-        )}</tbody></table></div><details class="result-note"><summary>查看修改项（${R.changes(d.configA, d.configB).length}）</summary><ul>${
-        R.changes(d.configA, d.configB)
-          .map((p) => `<li>${escape(p)}</li>`)
-          .join('') || '<li>没有参数差异，结果应完全一致。</li>'
-      }</ul></details><div class="result-note">按时完成率：A ${f(d.A.onTime * 100, 1)}% → B ${f(d.B.onTime * 100, 1)}%。等座均值：A ${f(d.A.seatWait)} → B ${f(d.B.seatWait)} 分钟。</div><details class="result-note"><summary>结果怎么读</summary><p>95% 区间描述模型内随机波动，不包含学校参数不准确的误差。完整用时从各年级最早允许放行算起；改变允许时刻也会改变计时基准。年级差仅为描述指标，不能独立证明公平。</p></details>${gradeComparison(d.configA, d.configB, d.A, d.B)}`;
-    $('scenario-section').hidden = false;
-    $('scenario-stale').hidden = !stale;
-    $('scenario-run').disabled = state.busy || !!stale;
-  }
-  async function scenarioRun() {
-    const d = state.comparison;
-    if (!d || !comparisonIsCurrent()) return;
-    const threshold = Number($('grade-limit').value);
-    const plan = D.planScenarios(d.configA, d.configB, { repeats: Number($('scenario-repeats').value) });
-    if (!plan.executable) {
-      message(
-        '本次情景计算量较大',
-        '请改为10轮，或减少场景人数后重新比较。当前人数×轮次数超过本地检查预算，尚未开始计算。'
-      );
-      return;
-    }
-    busy(true);
-    state.scenarioCheck = null;
-    $('export-scenarios').disabled = true;
-    const out = $('scenario-output');
-    out.innerHTML = `<div class="progress-wrap"><h3>正在检查${plan.accepted.length}个情景…</h3><progress id="scenario-progress" value="0" max="${plan.accepted.length * plan.repeats}"></progress></div>`;
-    addCancel('scenario-progress');
-    try {
-      const cases = [];
-      for (const cell of plan.accepted) {
-        const a = [],
-          b = [];
-        for (const seed of plan.seeds) {
-          a.push(R.metrics(E.simulateSchool({ ...cell.configA, seed })));
-          b.push(R.metrics(E.simulateSchool({ ...cell.configB, seed })));
-          $('scenario-progress').value++;
-          await yieldUI();
-        }
-        cases.push({
-          ...cell,
-          roundsA: a,
-          roundsB: b,
-          assessment: D.assess(cell.configA, cell.configB, a, b, threshold)
-        });
-      }
-      state.scenarioCheck = {
-        schema: 'dining-scenarios/1',
-        evidence: 'synthetic',
-        build: window.DiningLabBuild || null,
-        decisionVersion: D.VERSION,
-        createdAt: new Date().toISOString(),
-        configA: R.clone(d.configA),
-        configB: R.clone(d.configB),
-        threshold,
-        seeds: plan.seeds,
-        repeats: plan.repeats,
-        scope: plan.scope,
-        rejected: plan.rejected,
-        cases,
-        summary: D.summarizeScenarios(cases)
-      };
-      renderScenarios();
-      $('export-scenarios').disabled = false;
-      status(`情景检查完成 · ${cases.length}组假设，非现实成功概率`);
-    } catch (error) {
-      experimentError('scenario-output', '情景检查未完成', error);
-    } finally {
-      busy(false);
-      renderComparison();
-    }
-  }
-  function renderScenarios() {
-    const s = state.scenarioCheck;
-    if (!s) return;
-    const summary = s.summary;
-    const labels = {
-      within: '阈值内',
-      exceeded: '超过阈值',
-      uncertain: '尚不确定',
-      'not-comparable': '口径不同'
-    };
-    $('scenario-output').innerHTML =
-      `<div class="scenario-result"><h3>${summary.scenarios}个情景中，${summary.meanImproved}个平均用时缩短</h3><p>其中${summary.supportedImprovement}个差值区间整体小于零；${summary.guardWithin}个通过本次年级阈值逐项检查。</p><p>平均完整用时变化范围：${f(summary.totalDeltaRange[0])}至${f(summary.totalDeltaRange[1])}分钟。以下数量不是现实发生概率。</p><div class="scenario-grid">${s.cases.map((cell) => `<article class="scenario-cell ${cell.assessment.guard === 'within' ? '' : 'caution'}"><span>服务用时×${cell.serviceFactor}</span><span>${escape(cell.label.split(' · ')[1])}</span><strong>${cell.assessment.total.mean > 0 ? '+' : ''}${f(cell.assessment.total.mean)}<small>分</small></strong><span>${labels[cell.assessment.guard]}</span></article>`).join('')}</div><p>数值为 B − A；负数表示B平均完整用时更短。</p><details><summary>查看各情景区间和年级变化</summary><div class="result-table" tabindex="0" role="region" aria-label="情景结果表，窄屏可横向滚动"><table><thead><tr><th>情景</th><th>完整用时变化 / 分</th><th>配对95%区间</th><th>最大年级平均变化 / 分</th><th>年级阈值检查</th></tr></thead><tbody>${s.cases
-        .map((cell) => {
-          const a = cell.assessment;
-          return `<tr><td>${escape(cell.label)}</td><td>${f(a.total.mean)}</td><td>[${f(a.total.low)}, ${f(a.total.high)}]</td><td>${a.comparability.comparable && a.mostAffected ? escape(a.mostAffected.name) + ' ' + f(a.mostAffected.delta.mean) : '口径不同'}</td><td>${labels[a.guard]}</td></tr>`;
-        })
-        .join(
-          ''
-        )}</tbody></table></div><p>年级阈值为${f(s.threshold * 60, 0)}秒。阈值内表示所列年级的各项区间上限未超过阈值；尚不确定表示仍不能排除超出。这里没有联合95%保证。</p></details>${s.rejected.length ? `<details><summary>${s.rejected.length}个情景未执行</summary>${s.rejected.map((cell) => `<p>${escape(cell.label)}：${escape(cell.reason)}</p>`).join('')}</details>` : ''}</div>`;
-    const selectedRepeats = Number($('scenario-repeats').value);
-    $('scenario-output').insertAdjacentHTML(
-      'afterbegin',
-      selectedRepeats === s.repeats
-        ? `<p>所示结果：每个情景${s.repeats}轮。</p>`
-        : `<p class="notice">当前结果为每格${s.repeats}轮；设置已改为${selectedRepeats}轮，重新检查后更新。</p>`
-    );
   }
   async function search() {
     busy(true);
@@ -886,35 +638,7 @@
   });
   $('parameters').onclick = parameters;
   $('edit-grades').onclick = parameters;
-  $('compare-edit').onclick = parameters;
-  $('guided-compare').onclick = () => {
-    if (!state.baseline) setBaseline(state.config, '当前方案（A）');
-    tab('compare');
-    $('research-tools').open = true;
-    renderGuide();
-    $('compare-edit').focus();
-  };
-  function tryChange(kind) {
-    try {
-      if (!state.baseline) setBaseline(state.config, '当前方案（A）');
-      let c = R.clone(state.config);
-      if (kind === 'gap') c = E.makeSchoolGapConfig(c, 3);
-      else {
-        if (c.windows >= 16) throw new Error('当前已开放16个窗口，可在设置中调整打餐速度');
-        c.windows += 1;
-        c.windowOwners.push(0);
-        if (c.windowMeans) c.windowMeans.push(c.serviceMean);
-      }
-      run(c);
-      $(kind === 'gap' ? 'try-gap' : 'try-window').closest('details').open = false;
-      status('已修改 B；点击开始比较查看影响');
-      $('compare-run').focus();
-    } catch (error) {
-      message('无法应用此改动', error.message);
-    }
-  }
-  $('try-gap').onclick = () => tryChange('gap');
-  $('try-window').onclick = () => tryChange('window');
+  $('guided-compare').onclick = () => { tab('compare'); $('research-tools').open = true; $('research-tools').querySelector('summary').focus(); };
   $('close-parameters').onclick = $('cancel-parameters').onclick = () => $('parameter-dialog').close();
   $('message-close').onclick = () => $('message-dialog').close();
   // Reveal a folded invalid input before the browser tries to focus it.
@@ -999,51 +723,7 @@
   };
   $('export-run').onclick = exportRun;
   $('export-students').onclick = exportStudents;
-  $('save').onclick = () => json('食堂场景_合成参数.json', R.session(state.config));
-  $('import').onclick = () => $('file-input').click();
-  $('file-input').onchange = async () => {
-    try {
-      const file = $('file-input').files[0];
-      if (!file) return;
-      if (state.busy) throw new Error('请等待本轮计算完成再导入场景');
-      if (file.size > 2000000) throw new Error('参数文件不能超过 2 MB');
-      const c = R.readSession(await file.text());
-      if (!c.diningEnabled || !c.students) throw new Error('此工作台需要启用就餐流程，且就餐人数大于零');
-      run(c);
-      status('场景已导入，按全部窗口通用、预计取餐完成最早重新计算');
-    } catch (error) {
-      message('导入失败', error.message);
-    } finally {
-      $('file-input').value = '';
-    }
-  };
   $('example-reset').onclick = () => run(exampleConfig());
-  $('set-baseline').onclick = () => setBaseline(state.config, '保存的当前方案');
-  $('sync-baseline').onclick = () => {
-    try {
-      setBaseline(E.makeSchoolBaseline(state.config), '同步放行参照');
-    } catch (error) {
-      message('无法生成参照', error.message);
-    }
-  };
-  $('compare-run').onclick = pairedRun;
-  $('scenario-run').onclick = scenarioRun;
-  $('scenario-repeats').onchange = renderScenarios;
-  $('export-scenarios').onclick = () => json('参数情景检查_合成实验.json', state.scenarioCheck);
-  $('grade-limit').onchange = () => {
-    if (state.comparison) renderComparison();
-    if (state.scenarioCheck) {
-      const s = state.scenarioCheck;
-      s.threshold = Number($('grade-limit').value);
-      s.cases.forEach(
-        (cell) =>
-          (cell.assessment = D.assess(cell.configA, cell.configB, cell.roundsA, cell.roundsB, s.threshold))
-      );
-      s.summary = D.summarizeScenarios(s.cases);
-      renderScenarios();
-    }
-  };
-  $('export-compare').onclick = () => json('配对比较_合成实验.json', state.comparison);
   $('search-run').onclick = search;
   $('learning-example').onclick = () => tab('live');
   $('download-observation').onclick = () =>
@@ -1105,10 +785,9 @@
     json,
     download,
     loadConfig: (config, original) => {
-      setBaseline(original, '生成排程前的安排');
       run(config);
       tab('live');
-      status('放行表已载入，可回放或与原安排比较');
+      status('放行表已载入，可查看运行过程');
     }
   });
   scheduleUI = window.DiningScheduleView.mount({

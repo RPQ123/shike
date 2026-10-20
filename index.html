@@ -16,14 +16,9 @@
       <a class="brand" href="#setup"><span class="brand-mark" aria-hidden="true">食</span><span>食刻</span><span class="brand-subtitle">校园食堂仿真与管理平台</span></a>
       <nav aria-label="操作步骤" class="workflow-nav">
         <button data-tab="setup" class="nav active"><span>01</span>选择方案</button>
-        <button data-tab="live" class="nav"><span>02</span>过程展示</button>
-        <button data-tab="compare" class="nav"><span>03</span>结果展示</button>
+        <button data-tab="live" class="nav"><span>02</span>运行过程</button>
+        <button data-tab="compare" class="nav"><span>03</span>仿真结果</button>
       </nav>
-      <button class="nav library-button" data-tab="evidence" data-icon="document">研究资料</button><details class="utility-menu"><summary>更多</summary><nav aria-label="工具与资料">
-        <button data-tab="search" class="nav">自动排程</button>
-        <button data-tab="evidence" class="nav">使用说明与资料</button>
-        <button data-tab="learn" class="nav">研究笔记</button>
-      </nav></details>
     </aside>
     <div class="shell">
       <header class="topbar">
@@ -34,14 +29,14 @@
       </header>
       <main id="main">
         <section class="page" id="page-setup" aria-labelledby="setup-title">
-          <div class="page-heading"><div><span class="step-eyebrow">第一步</span><h1 id="setup-title">选择就餐方案</h1><p>选择一种安排，按实际情况调整参数。</p></div><button id="setup-advanced" class="button">全部参数</button></div>
+          <div class="page-heading"><div><span class="step-eyebrow">第一步</span><h1 id="setup-title">选择就餐方案</h1><p>选择一种安排，按实际情况调整参数。</p></div><button id="setup-advanced" class="button" data-icon="settings">全部参数</button></div>
           <form id="setup-form">
             <fieldset class="preset-fieldset"><legend class="sr-only">就餐方案</legend><div class="preset-grid">
-              <label class="preset-card"><input type="radio" name="preset" value="none"><span class="preset-number">01</span><strong>不实行错峰</strong><span>所有年级、班级同时出发</span></label>
-              <label class="preset-card"><input type="radio" name="preset" value="grade"><span class="preset-number">02</span><strong>仅按年级错峰</strong><span>分年级出发，年级内同时出发</span></label>
-              <label class="preset-card"><input type="radio" name="preset" value="combined" checked><span class="preset-number">03</span><strong>年级与班级结合错峰</strong><span>三个年级各出发一个班，依次轮换</span></label>
+              <label class="preset-card"><input type="radio" name="preset" value="none"><span class="preset-number" data-icon="users" aria-hidden="true"></span><strong>不实行错峰</strong><span>所有年级、班级同时出发</span></label>
+              <label class="preset-card"><input type="radio" name="preset" value="grade"><span class="preset-number" data-icon="layers" aria-hidden="true"></span><strong>仅按年级错峰</strong><span>分年级出发，年级内同时出发</span></label>
+              <label class="preset-card"><input type="radio" name="preset" value="combined" checked><span class="preset-number" data-icon="clock" aria-hidden="true"></span><strong>年级与班级结合错峰</strong><span>三个年级各出发一个班，依次轮换</span></label>
             </div></fieldset>
-            <section class="panel setup-parameters"><div class="panel-heading"><h2>参数设置</h2><span id="setup-total">共1610人</span></div>
+            <section class="panel setup-parameters"><div class="panel-heading"><h2 data-icon="settings">参数设置</h2><span id="setup-total">共1610人</span></div>
               <div class="setup-grades">
                 <div><h3>高一</h3><label>人数<input id="setup-students-0" type="number" min="0" max="5000" step="1" required></label><label>班级数<input id="setup-classes-0" type="number" min="1" max="100" step="1" required></label></div>
                 <div><h3>高二</h3><label>人数<input id="setup-students-1" type="number" min="0" max="5000" step="1" required></label><label>班级数<input id="setup-classes-1" type="number" min="1" max="100" step="1" required></label></div>
@@ -58,22 +53,15 @@
               <details class="setup-order"><summary>年级顺序</summary><select id="setup-order" aria-label="年级顺序"><option value="2,1,0">高三 → 高二 → 高一</option><option value="2,0,1">高三 → 高一 → 高二</option><option value="1,2,0">高二 → 高三 → 高一</option><option value="1,0,2">高二 → 高一 → 高三</option><option value="0,2,1">高一 → 高三 → 高二</option><option value="0,1,2">高一 → 高二 → 高三</option></select></details>
             </section>
             <p id="setup-error" class="error" role="alert"></p>
-            <div class="workflow-footer"><span class="example-label">当前为示例参数，可按学校实际修改</span><button class="button primary next-step" type="submit">查看就餐过程 <span aria-hidden="true">→</span></button></div>
+            <div class="workflow-footer"><span class="example-label">当前为示例参数，可按学校实际修改</span><button class="button primary next-step" type="submit">开始仿真 <span data-icon="arrow"></span></button></div>
           </form>
         </section>
         <section class="page active" id="page-live" aria-labelledby="live-title">
           <div class="page-heading">
             <div>
-              <span class="step-eyebrow">第二步</span><h1 id="live-title">过程展示</h1>
+              <span class="step-eyebrow">第二步</span><h1 id="live-title">运行过程</h1>
             </div>
             <div class="actions">
-              <details class="file-menu">
-                <summary class="button" data-icon="document">方案文件</summary>
-                <div class="menu-content">
-                  <button id="import" class="text-button">导入场景</button>
-                  <button id="save" class="text-button">保存场景</button>
-                </div>
-              </details>
               <button id="parameters" class="button" data-icon="settings">调整参数</button><button id="live-next" class="button primary">查看结果 <span data-icon="arrow"></span></button>
             </div>
           </div>
@@ -100,10 +88,10 @@
                   ><i class="g1"></i>高一 <i class="g2"></i>高二 <i class="g3"></i>高三</span
                 >
                 <div>
-                  <button data-camera="perspective" class="text-button">立体</button
-                  ><button data-camera="top" class="text-button">俯视</button
-                  ><button id="peak" class="text-button">排队高峰</button>
-                  <button id="scene-labels" class="text-button" aria-pressed="false">场景信息</button><button id="scene-expand" class="text-button icon-button" data-icon="expand" aria-label="放大场景" aria-pressed="false"></button>
+                  <button data-camera="perspective" class="text-button" data-icon="cube">立体</button
+                  ><button data-camera="top" class="text-button" data-icon="top">俯视</button
+                  ><button id="peak" class="text-button" data-icon="chart">排队高峰</button>
+                  <button id="scene-labels" data-icon="info" class="text-button" aria-pressed="false">场景信息</button><button id="scene-expand" class="text-button icon-button" data-icon="expand" aria-label="放大场景" aria-pressed="false"></button>
                 </div>
               </div>
               <div class="playback">
@@ -140,7 +128,7 @@
               </article>
               <details class="panel inspector" id="selection-details">
                 <summary><span data-icon="note"></span><strong>查看单个记录</strong><span class="inspection-hint">查看学生的就餐轨迹与状态变化</span></summary>
-                <form id="student-locate-form" class="student-locate"><label>模拟学生编号<input id="student-number" type="number" min="1" max="1610" value="1" required></label><button type="submit" class="button">定位学生并查看轨迹</button><span id="student-locate-status" role="status"></span></form>
+                <form id="student-locate-form" class="student-locate"><label>模拟学生编号<input id="student-number" type="number" min="1" max="1610" value="1" required></label><button type="submit" class="button" data-icon="locate">定位学生并查看轨迹</button><span id="student-locate-status" role="status"></span></form>
                 <p id="inspect-text">点击窗口或学生，查看对应记录。</p>
                 <div id="inspect-detail"></div>
               </details>
@@ -160,17 +148,17 @@
         <section class="page" id="page-compare" aria-labelledby="compare-title">
           <div class="page-heading">
             <div>
-              <span class="step-eyebrow">第三步</span><h1 id="compare-title">结果展示</h1><p id="result-scenario"></p>
+              <span class="step-eyebrow">第三步</span><h1 id="compare-title">仿真结果</h1><p id="result-scenario"></p>
             </div>
-            <button id="result-back" class="button">修改方案</button>
+            <button id="result-back" class="button" data-icon="settings">修改方案</button>
           </div>
           <div class="kpi-grid" id="kpis"></div>
-          <section class="panel result-overview"><h2>本次就餐结果</h2><div id="result-summary"></div><div id="result-grades"></div></section>
+          <section class="panel result-overview"><h2 data-icon="check">本次就餐结果</h2><div id="result-summary"></div><div id="result-grades"></div></section>
           <article class="panel chart-panel">
             <div class="panel-heading">
-              <h2>排队人数变化</h2>
+              <h2 data-icon="chart">排队人数变化</h2>
               <details class="file-menu">
-                <summary class="button">导出数据</summary>
+                <summary class="button" data-icon="download">导出数据</summary>
                 <div class="menu-content">
                   <button class="text-button" id="export-students">逐人记录 CSV ↓</button
                   ><button class="text-button" id="export-run">完整结果 JSON ↓</button>
@@ -183,83 +171,7 @@
               <p id="chart-note"></p>
             </details>
           </article>
-          <details class="panel research-tools" id="research-tools"><summary>比较方案与出发间隔</summary><div id="schedule-study"></div></details>
-          <details id="legacy-comparison" class="panel legacy-comparison"><summary>自定义两方案比较</summary><div class="legacy-actions"><button id="export-compare" class="button" disabled>导出两方案实验</button></div>
-          <ol class="experiment-steps" aria-label="比较步骤">
-            <li data-experiment-step="1"><span>1</span>保存 A</li>
-            <li data-experiment-step="2"><span>2</span>修改 B</li>
-            <li data-experiment-step="3"><span>3</span>查看结果</li>
-          </ol>
-          <div class="compare-setup panel">
-            <div>
-              <span class="tag">方案 A</span>
-              <h2 id="baseline-name">尚未保存</h2>
-              <p id="baseline-detail">保存后，A 会保持不变。</p>
-              <button id="set-baseline" class="button">保存当前方案为 A</button>
-              <details class="inline-option">
-                <summary>其他参照</summary>
-                <button id="sync-baseline" class="text-button">生成同步放行方案</button>
-              </details>
-            </div>
-            <span class="versus">→</span>
-            <div>
-              <span class="tag dark">方案 B</span>
-              <h2>当前方案</h2>
-              <p id="current-detail"></p>
-              <button id="compare-edit" class="button">修改 B</button>
-              <details class="inline-option">
-                <summary>试一个改动</summary>
-                <div class="example-actions">
-                  <button id="try-gap" class="text-button">年级间隔改为3分钟</button>
-                  <button id="try-window" class="text-button">增加1个通用窗口</button>
-                </div>
-              </details>
-            </div>
-            <div class="experiment-control">
-              <label for="repeats">重复次数</label
-              ><select id="repeats">
-                <option value="10">10 轮</option>
-                <option value="30" selected>30 轮</option></select
-              ><button id="compare-run" class="button primary">开始比较</button>
-            </div>
-          </div>
-          <div id="compare-output" class="empty-state">
-            <h2>比较结果将显示在这里</h2>
-            <p>每轮两方案使用相同随机需求，减少随机波动的干扰。</p>
-          </div>
-          <details id="scenario-section" class="panel scenario-check" hidden>
-            <summary>检查参数变化</summary>
-            <p>两方案一起改变打餐速度，看看结论是否随假设改变。</p>
-            <div class="scenario-controls">
-              <label for="grade-limit"
-                >年级增加用时上限
-                <select id="grade-limit">
-                  <option value="0">0 秒</option>
-                  <option value="0.5" selected>30 秒</option>
-                  <option value="1">60 秒</option>
-                </select>
-              </label>
-              <label for="scenario-repeats"
-                >每个情景
-                <select id="scenario-repeats">
-                  <option value="10">10 轮</option>
-                  <option value="30">30 轮</option>
-                </select>
-              </label>
-              <button id="scenario-run" class="button primary">开始情景检查</button>
-              <button id="export-scenarios" class="button" disabled>导出情景数据</button>
-            </div>
-            <p id="scenario-stale" class="notice" hidden>比较参数已改变，请先重新比较 A/B，再检查情景。</p>
-            <details class="scenario-method">
-              <summary>情景和阈值怎么设定</summary>
-              <p>服务用时取当前值的0.8、1、1.2倍，共3组情景。所有窗口都能服务所有学生。</p>
-              <p>
-                这些数值为示例参数；可选择允许增加的用时。各项95%配对区间仅反映随机重复波动，不是全部年级和情景的联合保证。
-              </p>
-            </details>
-            <div id="scenario-output"></div>
-          </details>
-          </details>
+          <details class="panel research-tools" id="research-tools"><summary data-icon="layers">比较方案与出发间隔</summary><div id="schedule-study"></div></details>
         </section>
         <section class="page" id="page-search" aria-labelledby="search-title">
           <div class="page-heading">
@@ -352,11 +264,11 @@
                   <p>选择一种预设，按实际情况调整人数、班级、窗口、座位和出发间隔。</p>
                 </li>
                 <li>
-                  <b>过程展示</b>
+                  <b>运行过程</b>
                   <p>播放三维过程，观察学生排队、取餐、端盘步行和入座。</p>
                 </li>
                 <li>
-                  <b>结果展示</b>
+                  <b>仿真结果</b>
                   <p>查看平均排队时间与各年级结果，导出记录；也可展开比较三种方案与出发间隔。</p>
                 </li>
               </ol>
@@ -487,7 +399,6 @@
       <p id="message-body"></p>
       <button id="message-close" class="button primary">知道了</button>
     </dialog>
-    <input type="file" id="file-input" accept=".json,application/json" hidden />
     <script src="build-info.js"></script>
     <script src="vendor/three.min.js"></script>
     <script src="engine.js"></script>
