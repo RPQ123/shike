@@ -23,7 +23,7 @@
             g,
             input(g, 'students', '就餐人数', { max: 5000, step: 1 }) +
               input(g, 'releaseTime', '首班放行', { type: 'time' }) +
-              input(g, 'deadline', '返程完成截止', { type: 'time' })
+              input(g, 'deadline', '返回教室的最晚时刻', { type: 'time' })
           )
         )
         .join('')

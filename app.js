@@ -26,8 +26,9 @@
     lastTick: 0
   };
   const names = {
-    live: '食堂仿真',
-    compare: '方案比较',
+    setup: '选择方案',
+    live: '过程展示',
+    compare: '结果展示',
     search: '方案筛选',
     evidence: '使用说明',
     learn: '研究笔记'
@@ -35,6 +36,7 @@
   let parameterOriginal = {};
   let plannerUI = null;
   let scheduleUI = null;
+  let workflowUI = null;
   const escape = (s) =>
     String(s).replace(
       /[&<>"']/g,
@@ -105,6 +107,7 @@
   }
   function tab(name) {
     if (!names[name]) return;
+    document.querySelectorAll('.utility-menu').forEach(menu => menu.open = false);
     state.tab = name;
     document.querySelectorAll('.page').forEach((p) => p.classList.toggle('active', p.id === 'page-' + name));
     document.querySelectorAll('.nav').forEach((b) => {
@@ -116,6 +119,7 @@
     state.playing = false;
     updatePlay();
     state.view?.setActive(name === 'live' && state.mode === '3d');
+    if (name === 'compare') requestAnimationFrame(renderChart);
     if (name === 'live')
       requestAnimationFrame(() => {
         renderFrame();
@@ -142,6 +146,7 @@
     scheduleUI?.onConfigChange();
     updateSearchState();
     plannerUI?.onConfigChange();
+    workflowUI?.onConfigChange();
     status('仿真已完成');
   }
   function updateSearchState() {
@@ -156,9 +161,9 @@
     $('scenario-detail').textContent = `${c.students} 人 · ${c.windows} 窗口 · ${c.seats} 座位`;
     $('current-detail').textContent = describe(c);
     const cards = [
-      ['平均排队', m.meanWait, '分'],
+      ['平均就餐排队时间', m.meanWait, '分'],
       ['平均完整用时', m.meanTotal, '分'],
-      ['按时完成', m.onTime * 100, '%']
+      ['按时返回', m.onTime * 100, '%']
     ];
     $('kpis').innerHTML = cards
       .map(
@@ -874,6 +879,7 @@
   $('guided-compare').onclick = () => {
     if (!state.baseline) setBaseline(state.config, '当前方案（A）');
     tab('compare');
+    $('research-tools').open = true;
     renderGuide();
     $('compare-edit').focus();
   };
@@ -1088,10 +1094,12 @@
     yieldUI, message, status, json, download,
     loadConfig: (config) => { run(config); tab('live'); status('研究方案已载入，可观察就餐过程'); }
   });
+  workflowUI = window.DiningWorkflow.mount({getConfig: () => state.config, getResult: () => state.result, isBusy: () => state.busy, run, tab, parameters, message});
   run(state.config);
+  tab('setup');
   requestAnimationFrame(animate);
   new ResizeObserver(() => {
-    if (state.tab === 'live') renderChart();
+    if (state.tab === 'compare') renderChart();
   }).observe($('queue-chart'));
   // Read-only test visibility. Consumers must use UI actions for changes.
   Object.defineProperty(window, 'DiningLabSnapshot', {
