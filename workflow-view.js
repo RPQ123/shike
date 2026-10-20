@@ -10,6 +10,46 @@
     const form = $('setup-form');
     const number = id => Number($(id).value);
     const kind = () => form.querySelector('[name=preset]:checked')?.value;
+    const orderInput=$('setup-order'),blocks=$('grade-order-blocks'),gradeNames=['高一','高二','高三'];
+    function renderOrder(){
+      const ids=orderInput.value.split(',').map(Number);
+      blocks.replaceChildren(...ids.map((id,index)=>{
+        const button=document.createElement('button');button.type='button';button.className='grade-order-block';button.dataset.grade=String(id);
+        button.setAttribute('aria-label',gradeNames[id]+'，第'+(index+1)+'位；拖动或使用左右方向键调整');
+        button.innerHTML='<span class="order-number">'+(index+1)+'</span><b>'+gradeNames[id]+'</b><svg viewBox="0 0 16 20" aria-hidden="true"><path d="M5 4h.01M11 4h.01M5 10h.01M11 10h.01M5 16h.01M11 16h.01"/></svg>';
+        return button;
+      }));
+    }
+    function moveGrade(id,target){
+      const ids=orderInput.value.split(',').map(Number),from=ids.indexOf(id);
+      if(from===target||target<0||target>=ids.length)return;
+      ids.splice(from,1);ids.splice(target,0,id);orderInput.value=ids.join(',');dirty=true;renderOrder();
+      $('grade-order-status').textContent='出发顺序：'+ids.map(id=>gradeNames[id]).join('、');
+    }
+    let drag=null;
+    blocks.addEventListener('pointerdown',event=>{
+      const button=event.target.closest('[data-grade]');if(!button||event.button!==0)return;
+      drag={id:Number(button.dataset.grade),x:event.clientX,y:event.clientY,moved:false};
+      button.focus();event.preventDefault();
+    });
+    window.addEventListener('pointermove',event=>{
+      if(!drag)return;
+      if(Math.hypot(event.clientX-drag.x,event.clientY-drag.y)>6)drag.moved=true;
+      if(!drag.moved)return;
+      const rect=blocks.getBoundingClientRect();if(event.clientY<rect.top-35||event.clientY>rect.bottom+35)return;
+      const candidates=Array.from(blocks.children).map((el,index)=>({index,rect:el.getBoundingClientRect()}));
+      const nearest=candidates.sort((a,b)=>Math.abs(event.clientX-(a.rect.left+a.rect.width/2))-Math.abs(event.clientX-(b.rect.left+b.rect.width/2)))[0];
+      moveGrade(drag.id,nearest.index);blocks.querySelector('[data-grade="'+drag.id+'"]').classList.add('dragging');
+    });
+    function endDrag(){if(!drag)return;const id=drag.id;drag=null;renderOrder();blocks.querySelector('[data-grade="'+id+'"]').focus({preventScroll:true});}
+    window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);
+    blocks.addEventListener('keydown',event=>{
+      const button=event.target.closest('[data-grade]');if(!button||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(event.key))return;
+      event.preventDefault();const id=Number(button.dataset.grade),from=orderInput.value.split(',').map(Number).indexOf(id);
+      const next=event.key==='Home'?0:event.key==='End'?2:from+(['ArrowLeft','ArrowUp'].includes(event.key)?-1:1);
+      moveGrade(id,next);blocks.querySelector('[data-grade="'+id+'"]').focus();
+    });
+    renderOrder();
     function gapLabel() {
       const k=kind(), label=$('setup-gap-label');
       label.hidden=!k||k==='none';
@@ -85,7 +125,7 @@
       $('setup-start').value=time(Math.max(...active.map(g=>g.readyTime)));
       $('setup-deadline').value=time(Math.min(...active.map(g=>g.deadline)));
       const order=[...ordered.map(g=>g.id),...c.grades.filter(g=>!g.students).map(g=>g.id)].join(',');
-      if(k!=='none') $('setup-order').value=order;
+      if(k!=='none') $('setup-order').value=order;renderOrder();
       if(k==='combined') slotSeconds=active[0].classInterval/active.length*60;
       if(k==='grade'&&ordered.length>1) gradeGapMinutes=ordered[1].releaseTime-ordered[0].releaseTime;
       gapLabel();$('setup-total').textContent='共'+c.students+'人';dirty=false;

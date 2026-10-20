@@ -34,7 +34,7 @@
     const generator=new T.PMREMGenerator(renderer),target=generator.fromEquirectangular(texture);generator.dispose();texture.dispose();return target;
   }
   function build(layout){
-    const group=new T.Group();group.name='日光食堂建筑';
+    const group=new T.Group();group.name='日光食堂建筑';group.userData.chairsDrawn=0;
     const batch=new Batch(group),cube=new T.BoxGeometry(1,1,1),sphere=new T.IcosahedronGeometry(1,1),leaf=new T.IcosahedronGeometry(1,0),round=new T.CylinderGeometry(1,1,1,10),plate=new T.CylinderGeometry(1,1,1,20);
     const profile=new T.Shape();profile.moveTo(-.43,-.5);profile.lineTo(.43,-.5);profile.quadraticCurveTo(.5,-.5,.5,-.43);profile.lineTo(.5,.43);profile.quadraticCurveTo(.5,.5,.43,.5);profile.lineTo(-.43,.5);profile.quadraticCurveTo(-.5,.5,-.5,.43);profile.lineTo(-.5,-.43);profile.quadraticCurveTo(-.5,-.5,-.43,-.5);
     const softened=new T.ExtrudeGeometry(profile,{depth:1,bevelEnabled:false,curveSegments:3});softened.rotateX(-Math.PI/2);softened.center();
@@ -98,11 +98,12 @@
     // Dining furniture uses the exact table and chair centers in the model.
     for(const table of layout.tables){
       const [x,,z]=table.position;
-      batch.add(softened,wood,[x,.86,z],[1.96,.12,1.2]);
-      put([1.72,.045,1.02],[x,.79,z],dark);
-      for(const dx of [-.73,.73])for(const dz of [-.43,.43])put([.065,.72,.065],[x+dx,.40,z+dz],steel);
-      for(let i=0;i<4;i++){
-        const side=i<2?-1:1,xx=x+(i%2?.54:-.54),zz=z+side*1.02;
+      batch.add(softened,wood,[x,.86,z],[table.width||1.96,.12,1.2]);
+      put([(table.width||1.96)-.24,.045,1.02],[x,.79,z],dark);
+      for(const dx of [-((table.width||1.96)/2-.25),(table.width||1.96)/2-.25])for(const dz of [-.43,.43])put([.065,.72,.065],[x+dx,.40,z+dz],steel);
+      for(let i=0;i<(table.chairCount??4);i++){
+        group.userData.chairsDrawn++;
+        const perSide=table.chairCount!==undefined?4:2,side=i<perSide?-1:1,xx=x+(perSide===4?(i%4-1.5)*.66:(i%2?.54:-.54)),zz=z+side*1.02;
         batch.add(softened,green,[xx,.49,zz],[.49,.09,.47]);
         put([.47,.39,.075],[xx,.75,zz+side*.22],green);
         for(const dx of [-.17,.17])for(const dz of [-.16,.16])put([.035,.43,.035],[xx+dx,.24,zz+dz],steel);
@@ -131,7 +132,7 @@
         for(const x of [-.67,.67])piece([.035,.73,.026],[x,.57,.638],panelLine);
       }else piece([1.95,.83,.10],[0,1.49,-.27],stone);
     }
-    batch.flush();return group;
+    group.userData.seatCount=layout.displaySeats.length;group.userData.tableCount=layout.tables.length;batch.flush();return group;
   }
   window.DiningHallDesign=Object.freeze({build,environment});
 })();

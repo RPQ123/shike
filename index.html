@@ -50,7 +50,7 @@
                 <label>返回教室的最晚时刻<input id="setup-deadline" type="time" required></label>
                 <label id="setup-gap-label">相邻组出发间隔 / 秒<input id="setup-gap" type="number" min="0" max="600" step="1" required></label>
               </div>
-              <details class="setup-order"><summary>年级顺序</summary><select id="setup-order" aria-label="年级顺序"><option value="2,1,0">高三 → 高二 → 高一</option><option value="2,0,1">高三 → 高一 → 高二</option><option value="1,2,0">高二 → 高三 → 高一</option><option value="1,0,2">高二 → 高一 → 高三</option><option value="0,2,1">高一 → 高三 → 高二</option><option value="0,1,2">高一 → 高二 → 高三</option></select></details>
+              <details class="setup-order" open><summary>年级顺序</summary><input id="setup-order" type="hidden" value="2,1,0"><div id="grade-order-blocks" class="grade-order-blocks" role="group" aria-label="拖动年级块调整出发顺序"></div><span id="grade-order-status" class="sr-only" role="status"></span></details>
             </section>
             <p id="setup-error" class="error" role="alert"></p>
             <div class="workflow-footer"><span class="example-label">当前为示例参数，可按学校实际修改</span><button class="button primary next-step" type="submit">开始仿真 <span data-icon="arrow"></span></button></div>
@@ -66,7 +66,7 @@
             </div>
           </div>
           <div class="scenario-bar">
-            <div><b id="scenario-name">三年级教学场景</b><span id="scenario-detail"></span></div>
+            <div><div id="scenario-name" class="scenario-field"></div><div id="scenario-detail" class="scenario-fields"></div></div>
             <div class="scenario-links">
               <button id="guided-compare" class="text-button">比较更多方案</button>
               <button id="example-reset" class="text-button">恢复示例参数</button>
@@ -90,8 +90,8 @@
                 <div>
                   <button data-camera="perspective" class="text-button" data-icon="cube">立体</button
                   ><button data-camera="top" class="text-button" data-icon="top">俯视</button
-                  ><button id="peak" class="text-button" data-icon="chart">排队高峰</button>
-                  <button id="scene-labels" data-icon="info" class="text-button" aria-pressed="false">场景信息</button><button id="scene-expand" class="text-button icon-button" data-icon="expand" aria-label="放大场景" aria-pressed="false"></button>
+                  ><button id="peak" class="text-button" data-icon="chart">查看排队最高峰时刻</button>
+                  <button id="scene-labels" data-icon="info" class="text-button" aria-pressed="true">隐藏场景信息</button><button id="scene-expand" class="text-button icon-button" data-icon="expand" aria-label="放大场景" aria-pressed="false"></button>
                 </div>
               </div>
               <div class="playback">
@@ -102,7 +102,7 @@
                   for="speed"
                   >播放速度</label
                 ><select id="speed">
-                  <option value="0.016666666666666666">1 倍速 · 观察动作</option>
+                  <option value="0.016666666666666666">1倍速</option>
                   <option value="0.08333333333333333">5 倍速</option>
                   <option value="0.25">15 倍速</option>
                   <option value="0.5" selected>30 倍速</option>
@@ -110,7 +110,7 @@
                   <option value="3">180 倍速</option>
                 </select>
               </div>
-              <div id="scene3d" class="scene-3d minimal-scene"></div>
+              <div id="scene3d" class="scene-3d minimal-scene show-labels"></div>
               <div id="scene2d" class="scene-2d" hidden></div>
               <div class="live-counts" id="live-counts"></div><div class="canvas-hint">拖动旋转 · 滚轮缩放 · 点击人物查看记录</div>
               <details class="scene-explanation">

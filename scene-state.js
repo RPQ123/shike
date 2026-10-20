@@ -6,9 +6,9 @@
  * Coordinates are illustrative scene units, not a measured school floorplan.
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./school-engine.js'));
-  else root.CanteenSceneState = factory(root.CanteenSim);
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (Engine) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./school-engine.js'), require('./hall-walk.js'));
+  else root.CanteenSceneState = factory(root.CanteenSim, root.DiningHallWalk);
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (Engine, Hall) {
   'use strict';
   var VERSION = '1.6.0', SLOT_COUNT = 16, WAITING_LIMIT = 320;
   var DEPARTURE_LIMIT = 64, DEPARTURE_DURATION = 1.5;
@@ -171,24 +171,24 @@
     else windows.forEach(function(w){layout.queueSpecs.push({id:queueId(w.zone,null,w.id),zone:w.zone,zoneName:w.zoneName,cohort:null,window:w.id});});
     var qCount = layout.queueSpecs.length;
     layout.queues = buildQueues(layout, Array.from({ length: qCount }, function (_, i) { return Math.floor(WAITING_LIMIT / qCount) + (i < WAITING_LIMIT % qCount ? 1 : 0); }));
-    if(schoolMode&&!zoned&&!pooled&&config.strategy==='fastest') {
+    if(schoolMode&&!zoned&&!pooled&&config.strategy==='fastest'&&config.allocation==='shared') {
       layout.twoSided=true;
+      var physical=Hall.create(config);
+      layout.exactSeats=true;layout.tables=physical.tables;layout.displaySeats=Array.from(physical.seatMap.values());
+      layout.zones[0].tableIds=layout.tables.map(function(t){return t.id;});
+      layout.bounds.maxZ=physical.maxZ;layout.bounds.depth=physical.maxZ-layout.bounds.minZ;
+      layout.floorCenter=[0,0,physical.centerZ];
       var leftCount=Math.ceil(windowCount/2),rightCount=Math.floor(windowCount/2);
       layout.slots=Array.from({length:16},function(_,slot) {
         var left=slot<8,local=slot%8,count=left?leftCount:rightCount,first=Math.floor((8-count)/2);
         var open=local>=first&&local<first+count,id=open?(left?0:leftCount)+local-first:null,side=left?-1:1;
-        return {slotIndex:slot,windowId:id,zone:open?0:null,open:open,x:side*21.2,z:-4.6+local*2.6,rotation:left?Math.PI/2:-Math.PI/2,position:[side*21.2,0,-4.6+local*2.6]};
+        return {slotIndex:slot,windowId:id,zone:open?0:null,open:open,x:side*21.2,z:physical.slotZ[local],rotation:left?Math.PI/2:-Math.PI/2,position:[side*21.2,0,physical.slotZ[local]]};
       });
       layout.windows=layout.slots.filter(function(s){return s.open;}).map(function(s) {
         var side=Math.sign(s.x);
         return {id:s.windowId,slotIndex:s.slotIndex,zone:0,zoneName:zones[0].name,x:s.x,z:s.z,position:s.position.slice(),servicePosition:[side*19.85,0,s.z],queueHead:[side*18.7,0,s.z],queueId:'window-'+s.windowId};
       });
-      layout.entries=[[0,0,-7.4],[0,0,17.7]];layout.entry=layout.entries[0];layout.exit=layout.entries[1];
-      layout.tables.forEach(function(t,i){t.position=[(i%3-1)*5,0,-4.5+Math.floor(i/3)*3.85];});
-      layout.displaySeats.forEach(function(seat){
-        var t=layout.tables[seat.table],chair=seat.id%4,side=chair<2?-1:1;
-        seat.position=[t.position[0]+(chair%2?.54:-.54),.17,t.position[2]+side*1.02];
-      });
+      layout.entries=[[0,0,physical.minZ+.3],[0,0,physical.maxZ-.3]];layout.entry=layout.entries[0];layout.exit=layout.entries[1];
       layout.queues=buildQueues(layout,Array.from({length:windowCount},function(_,i){return Math.floor(WAITING_LIMIT/windowCount)+(i<WAITING_LIMIT%windowCount?1:0);}));
     }
     return freezeTree(layout);
@@ -232,7 +232,8 @@
     var side = start[0] >= table[0] ? 1 : -1, accessX = table[0] + side * 1.7;
     if(layout.twoSided) {
       var exit=layout.entries[start[2]<layout.floorCenter[2]?0:1];
-      return compactPath([start,[accessX,0,start[2]],[accessX,0,exit[2]],exit]);
+      var rowZ=table[2]+(start[2]<table[2]?-1.58:1.58);
+      return compactPath([start,[start[0],0,rowZ],[accessX,0,rowZ],[accessX,0,exit[2]],exit]);
     }
     return compactPath([start, [accessX, 0, start[2]], [accessX, 0, 13.5], [lane.rightX, 0, 13.5], layout.exit]);
   }
@@ -247,7 +248,7 @@
       var physicalSeats=layout.displaySeats.filter(function(seat){return seat.zone===zi;});
       zoneDisplaySeats.push(physicalSeats);
       var seatBudget=Math.min(physicalSeats.length,zone.seats,Math.max(1,Math.round(zone.seats/seatScale)));
-      selectedIndices(zone.seats,seatBudget).forEach(function(localSeat,displaySeat){var logicalSeat=seatOffset+localSeat;selectedSeats.push(logicalSeat);seatMap.set(logicalSeat,physicalSeats[displaySeat]);});
+      selectedIndices(zone.seats,seatBudget).forEach(function(localSeat,displaySeat){var logicalSeat=seatOffset+localSeat;selectedSeats.push(logicalSeat);seatMap.set(logicalSeat,physicalSeats[layout.exactSeats?localSeat:displaySeat]);});
       seatOffset+=zone.seats;
     });
     answer.representedSeats = selectedSeats.length;

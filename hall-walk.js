@@ -13,8 +13,24 @@
   const head=Math.min(4,Math.max(1,k-2)),rest=k-head;
   return Array.from({length:head},(_,i)=>i).concat(Array.from({length:rest},(_,j)=>head+Math.floor(j*(n-1-head)/Math.max(1,rest-1))));
  }
+ function createExact(config){
+  const tables=[],seatMap=new Map(),columns=4,tableCount=Math.ceil(config.seats/8),rows=Math.ceil(tableCount/columns);
+  const minZ=-7.7,maxZ=Math.max(18,-4.5+(rows-1)*3.85+3.35),frontZ=-6.7,rearZ=maxZ-1.2;
+  for(let id=0;id<tableCount;id++){
+   const position=[(id%columns-1.5)*3.8,0,-4.5+Math.floor(id/columns)*3.85];
+   const chairCount=Math.min(8,config.seats-id*8),table={id,position,zone:0,chairCount,width:3.05,clearanceRadius:1.8};tables.push(table);
+   for(let chair=0;chair<chairCount;chair++){
+    const side=chair<4?-1:1,seatId=id*8+chair;
+    seatMap.set(seatId,{id:seatId,table:id,zone:0,position:[position[0]+(chair%4-1.5)*.66,.17,position[2]+side*1.02],yaw:side<0?0:Math.PI});
+   }
+  }
+  const slotZ=Array.from({length:8},(_,i)=>-4.6+i*(maxZ-7.9)/7),left=Math.ceil(config.windows/2),right=Math.floor(config.windows/2);
+  const windows=Array.from({length:config.windows},(_,i)=>{const side=i<left?-1:1,count=side<0?left:right,local=i<left?i:i-left;return [side*19.85,0,slotZ[Math.floor((8-count)/2)+local]];});
+  return {twoSided:true,exactSeats:true,tables,seatMap,windows,slotZ,frontZ,rearZ,minZ,maxZ,centerZ:(minZ+maxZ)/2};
+ }
  function create(config){
   const twoSided=!config.serviceZones&&config.strategy==='fastest'&&config.allocation==='shared';
+  if(twoSided)return createExact(config);
   const zones=config.serviceZones||[{id:0,seats:config.seats}],tables=[];
   const total=zones.reduce((sum,z)=>sum+z.seats*100,0),rest=18-zones.length;
   const exact=zones.map(z=>(z.seats*100-1)*rest/(total-zones.length));
@@ -54,7 +70,8 @@
   const rowZ=table[2]+(target[2]<table[2]?-1.58:1.58);
   if(hall.twoSided){
    const side=Math.sign(start[0])||1,aisle=side*8.25;
-   const crossZ=Math.abs(start[2]+6.7)+Math.abs(rowZ+6.7)<=Math.abs(start[2]-16.8)+Math.abs(rowZ-16.8)?-6.7:16.8;
+   const front=hall.frontZ??-6.7,rear=hall.rearZ??16.8;
+   const crossZ=Math.abs(start[2]-front)+Math.abs(rowZ-front)<=Math.abs(start[2]-rear)+Math.abs(rowZ-rear)?front:rear;
    return compact(fromCounter?[start,[side*19.35,0,start[2]],[side*19.35,0,crossZ],[aisle,0,crossZ],[aisle,0,rowZ],[target[0],0,rowZ],target]:[start,[aisle,0,start[2]],[aisle,0,rowZ],[target[0],0,rowZ],target]);
   }
   const aisle=table[0]+(target[0]<table[0]?-1:1)*1.7;
@@ -62,7 +79,8 @@
  }
  function plan(hall,student,seatId,available,speed){
   const seat=hall.seatMap.get(seatId),start=hall.windows[student.window],wait=waitingPoint(hall,student);
-  const approach=hall.twoSided?compact([start,[Math.sign(start[0])*19.35,0,start[2]],[Math.sign(start[0])*19.35,0,start[2]<5.15?-6.7:16.8],[wait[0],0,start[2]<5.15?-6.7:16.8],wait]):compact([start,[21.8,0,-3.02],[21.8,0,9.1],wait]);
+  const crossZ=start[2]<(hall.centerZ??5.15)?(hall.frontZ??-6.7):(hall.rearZ??16.8);
+  const approach=hall.twoSided?compact([start,[Math.sign(start[0])*19.35,0,start[2]],[Math.sign(start[0])*19.35,0,crossZ],[wait[0],0,crossZ],wait]):compact([start,[21.8,0,-3.02],[21.8,0,9.1],wait]);
   const waiting=speed>0&&available>student.end;
   const routeToSeat=route(hall,waiting?wait:start,seat,!waiting);
   const pace=speed*(.94+(student.id%13)*.01);

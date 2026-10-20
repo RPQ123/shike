@@ -199,13 +199,13 @@
       this.gradeBanner=root.document.createElement('div');this.gradeBanner.className='scene-grade-banner';Object.assign(this.gradeBanner.style,{position:'absolute',left:'12px',bottom:'12px',display:'flex',gap:'6px',flexWrap:'wrap',maxWidth:'calc(100% - 24px)',pointerEvents:'none'});this.gradeBanner.hidden=result.config.mode!=='school';this.labels.appendChild(this.gradeBanner);
       this.diningLabel=root.document.createElement('div');this.diningLabel.className='scene-pool-label';this.diningLabel.hidden=!(result.config.mode==='school'&&result.config.diningEnabled);this.labels.appendChild(this.diningLabel);
       this.seatWaitLabel=root.document.createElement('div');this.seatWaitLabel.className='scene-pool-label';this.seatWaitLabel.hidden=this.diningLabel.hidden;this.labels.appendChild(this.seatWaitLabel);
-      const b=this.layout.bounds,shadow=this.sun.shadow.camera;const extent=Math.max(b.width,b.depth);shadow.left=-extent*.72;shadow.right=extent*.72;shadow.top=extent*.72;shadow.bottom=-extent*.72;shadow.near=.1;shadow.far=100;shadow.updateProjectionMatrix();this.sun.target.position.set(...this.layout.floorCenter);
+      const b=this.layout.bounds,shadow=this.sun.shadow.camera;const extent=Math.max(b.width,b.depth);shadow.left=-extent*.72;shadow.right=extent*.72;shadow.top=extent*.72;shadow.bottom=-extent*.72;shadow.near=.1;shadow.far=extent*4;this.sun.position.set(-18,extent, this.layout.floorCenter[2]-extent*.5);shadow.updateProjectionMatrix();this.sun.target.position.set(...this.layout.floorCenter);
       this.lastVisualTime=null;this.selectedId=null;this.setCamera(this.preset);this.resize();
     }
     setCamera(name) {
       if(!this.layout)return;this.preset=name;this.camera.zoom=1;
       const center=new T.Vector3(...this.layout.floorCenter);center.y=.6;this.controls.target.copy(center);
-      const distance=Math.max(this.layout.bounds.width,this.layout.bounds.depth)*1.7;
+      const distance=Math.max(this.layout.bounds.width,this.layout.bounds.depth)*1.7;this.camera.far=distance*4;this.camera.updateProjectionMatrix();
       const directions={perspective:new T.Vector3(.54,1.8,1.58),top:new T.Vector3(0,1,.055),front:new T.Vector3(0,.65,1.4)};
       const dir=(directions[name]||directions.perspective).normalize();this.camera.position.copy(center).addScaledVector(dir,distance);this.camera.lookAt(center);this.controls.update();this.fit();this.invalidate();
     }
@@ -349,7 +349,7 @@
           const badge=root.document.createElement('span');Object.assign(badge.style,{background:['#e5eff6ee','#f8e8e1ee','#f7efd9ee'][i],color:'#304a41',border:'1px solid '+['#88aecd','#d8a18b','#d9bd74'][i],borderRadius:'7px',padding:'5px 7px',fontSize:'10px'});
           badge.textContent=grade.name+' · '+(released?('放行 '+released+' / 到达 '+arrived+' / 取餐 '+complete):'尚未放行');this.gradeBanner.appendChild(badge);
         });
-        this.diningLabel.textContent='就座 '+frame.counts.dining+' / '+this.result.config.seats+' 人 · 示意席位';
+        this.diningLabel.textContent='就座 '+frame.counts.dining+' / '+this.result.config.seats+' 人';
         const capacity=this.result.config.seatWaitingCapacity,assessed=capacity!==null&&capacity!==undefined;
         this.seatWaitLabel.textContent='端盘步行 '+(frame.counts.walkingToSeat||0)+' 人 · 等座 '+frame.counts.seatWaiting+' 人';
         this.seatWaitLabel.style.color=assessed&&frame.counts.seatWaiting>capacity?'#923e2e':'';
@@ -451,7 +451,7 @@
         while(zoneCaptionBoxes.some(b=>Math.abs(b.x-x)<(b.w+w)/2+5&&Math.abs(b.y-(y-row*25))<24))row++;
         this.placeLabel(label,label.scenePosition,-row*25);zoneCaptionBoxes.push({x,y:y-row*25,w});
       });
-      this.placeLabel(this.diningLabel,[0,.14,this.layout.twoSided?5.15:13.5]);this.placeLabel(this.seatWaitLabel,[this.layout.twoSided?-9.4:-19.4,.14,10]);
+      this.placeLabel(this.diningLabel,[0,.14,this.layout.twoSided?this.layout.floorCenter[2]:13.5]);this.placeLabel(this.seatWaitLabel,[this.layout.twoSided?-9.4:-19.4,.14,10]);
       this.renderer.render(this.scene,this.camera);if(moving&&this.playing)this.invalidate();
     }
     invalidate() {if(this.active&&!this.frameHandle)this.frameHandle=root.requestAnimationFrame(now=>{this.frameHandle=0;this.renderNow(now);});}

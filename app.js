@@ -155,8 +155,8 @@
   function renderSummary() {
     const m = R.metrics(state.result),
       c = state.config;
-    $('scenario-name').textContent = (c.sourceProfile?.title || '自定义场景').replace(/\s*·\s*合成参数$/, '');
-    $('scenario-detail').textContent = `${c.students} 人 · ${c.windows} 窗口 · ${c.seats} 座位`;
+    $('scenario-name').innerHTML = '方案：<strong>'+escape((c.sourceProfile?.title || '自定义安排').replace(/\s*·\s*合成参数$/, ''))+'</strong>';
+    $('scenario-detail').innerHTML = [['学生人数',c.students,'人'],['窗口数量',c.windows,'个'],['座位数量',c.seats,'个']].map(([label,value,unit])=>`<span class="scenario-field">${label}：<strong>${value}<small>${unit}</small></strong></span>`).join('');
     const cards = [
       ['平均就餐排队时间', m.meanWait, '分', 'clock'],
       ['平均完整用时', m.meanTotal, '分', 'walk'],
@@ -683,6 +683,7 @@
     const expanded = $('scene-labels').getAttribute('aria-pressed') !== 'true';
     $('scene-labels').setAttribute('aria-pressed', String(expanded));
     $('scene3d').classList.toggle('show-labels', expanded);
+    $('scene-labels').innerHTML=DiningIcons('info')+(expanded?'隐藏场景信息':'显示场景信息');
     renderFrame();
   };
   $('scene2d').onclick = (event) => {
@@ -809,7 +810,7 @@
       build: window.DiningLabBuild ? R.clone(window.DiningLabBuild) : null,
       tab: state.tab,
       mode: state.mode,
-      rendering: state.view ? {drawCalls: state.view.renderer.info.render.calls,triangles: state.view.renderer.info.render.triangles,geometries: state.view.renderer.info.memory.geometries,textures: state.view.renderer.info.memory.textures,visiblePeople: state.view.crowd?.items.length || 0,pickedStudent:state.view.selectedId,journeySegments:state.view.journeyTrace?.count||0,pickTargets:state.view.getPickTargets()} : null,
+      rendering: state.view ? {seatCount:state.view.layout.displaySeats.length,chairsDrawn:state.view.worldGroup.getObjectByName('日光食堂建筑')?.userData.chairsDrawn,tableCount:state.view.layout.tables.length,drawCalls: state.view.renderer.info.render.calls,triangles: state.view.renderer.info.render.triangles,geometries: state.view.renderer.info.memory.geometries,textures: state.view.renderer.info.memory.textures,visiblePeople: state.view.crowd?.items.length || 0,pickedStudent:state.view.selectedId,journeySegments:state.view.journeyTrace?.count||0,pickTargets:state.view.getPickTargets()} : null,
       busy: state.busy,
       config: R.clone(state.config),
       metrics: R.metrics(state.result),
