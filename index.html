@@ -3,23 +3,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>食刻 · 校园食堂仿真实验室</title>
+    <title>食刻｜校园食堂错峰就餐与窗口分配仿真系统</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="layout.css" />
     <link rel="stylesheet" href="studio.css" />
-      <link rel="stylesheet" href="schedule.css" /><link rel="stylesheet" href="workflow.css" />
+      <link rel="stylesheet" href="schedule.css" /><link rel="stylesheet" href="workflow.css" /><link rel="stylesheet" href="product.css" />
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
     <aside class="rail">
-      <a class="brand" href="#setup"><span class="brand-mark" aria-hidden="true">食</span><span>食刻</span></a>
+      <a class="brand" href="#setup"><span class="brand-mark" aria-hidden="true">食</span><span>食刻</span><span class="brand-subtitle">校园食堂仿真与管理平台</span></a>
       <nav aria-label="操作步骤" class="workflow-nav">
         <button data-tab="setup" class="nav active"><span>01</span>选择方案</button>
         <button data-tab="live" class="nav"><span>02</span>过程展示</button>
         <button data-tab="compare" class="nav"><span>03</span>结果展示</button>
       </nav>
-      <details class="utility-menu"><summary>更多</summary><nav aria-label="工具与资料">
+      <button class="nav library-button" data-tab="evidence" data-icon="document">研究资料</button><details class="utility-menu"><summary>更多</summary><nav aria-label="工具与资料">
         <button data-tab="search" class="nav">自动排程</button>
         <button data-tab="evidence" class="nav">使用说明与资料</button>
         <button data-tab="learn" class="nav">研究笔记</button>
@@ -68,13 +68,13 @@
             </div>
             <div class="actions">
               <details class="file-menu">
-                <summary class="button">方案文件</summary>
+                <summary class="button" data-icon="document">方案文件</summary>
                 <div class="menu-content">
                   <button id="import" class="text-button">导入场景</button>
                   <button id="save" class="text-button">保存场景</button>
                 </div>
               </details>
-              <button id="parameters" class="button">调整参数</button><button id="live-next" class="button primary">查看结果 →</button>
+              <button id="parameters" class="button" data-icon="settings">调整参数</button><button id="live-next" class="button primary">查看结果 <span data-icon="arrow"></span></button>
             </div>
           </div>
           <div class="scenario-bar">
@@ -88,14 +88,12 @@
           <div class="workspace-grid">
             <article class="scene-panel panel">
               <div class="panel-heading">
-                <div>
-                  <h2>就餐回放</h2>
-                </div>
+                <div class="replay-title"><span class="replay-symbol" data-icon="play"></span><div><h2>就餐回放</h2><p>观察学生从进入食堂到就餐离场的完整过程</p></div></div>
                 <div class="segmented" aria-label="场景显示">
                   <button id="view-3d" class="selected" aria-pressed="true">3D</button
                   ><button id="view-2d" aria-pressed="false">2D</button>
                 </div>
-                <strong class="clock" id="clock">11:50:00</strong>
+                <div class="simulation-clock"><span data-icon="clock">当前仿真时间</span><strong class="clock" id="clock">11:50:00</strong></div>
               </div>
               <div class="scene-toolbar">
                 <span class="legend"
@@ -105,7 +103,7 @@
                   <button data-camera="perspective" class="text-button">立体</button
                   ><button data-camera="top" class="text-button">俯视</button
                   ><button id="peak" class="text-button">排队高峰</button>
-                  <button id="scene-labels" class="text-button" aria-pressed="false">场景信息</button>
+                  <button id="scene-labels" class="text-button" aria-pressed="false">场景信息</button><button id="scene-expand" class="text-button icon-button" data-icon="expand" aria-label="放大场景" aria-pressed="false"></button>
                 </div>
               </div>
               <div class="playback">
@@ -126,7 +124,7 @@
               </div>
               <div id="scene3d" class="scene-3d minimal-scene"></div>
               <div id="scene2d" class="scene-2d" hidden></div>
-              <div class="live-counts" id="live-counts"></div>
+              <div class="live-counts" id="live-counts"></div><div class="canvas-hint">拖动旋转 · 滚轮缩放 · 点击人物查看记录</div>
               <details class="scene-explanation">
                 <summary>回放说明</summary>
                 <p id="scene-note">场地与人物为示意，人数来自全部模拟记录。</p>
@@ -141,7 +139,8 @@
                 <button id="edit-grades" class="text-button">修改安排</button>
               </article>
               <details class="panel inspector" id="selection-details">
-                <summary>查看单个记录</summary>
+                <summary><span data-icon="note"></span><strong>查看单个记录</strong><span class="inspection-hint">查看学生的就餐轨迹与状态变化</span></summary>
+                <form id="student-locate-form" class="student-locate"><label>模拟学生编号<input id="student-number" type="number" min="1" max="1610" value="1" required></label><button type="submit" class="button">定位学生并查看轨迹</button><span id="student-locate-status" role="status"></span></form>
                 <p id="inspect-text">点击窗口或学生，查看对应记录。</p>
                 <div id="inspect-detail"></div>
               </details>
@@ -155,7 +154,7 @@
                 <p>同类窗口可提供相同套餐；不模拟楼梯拥堵、换队或等座区对窗口的反向阻塞。</p>
               </details>
             </aside>
-          </div>
+          </div><div class="run-feedback" id="run-feedback"></div>
 
         </section>
         <section class="page" id="page-compare" aria-labelledby="compare-title">
@@ -185,8 +184,7 @@
             </details>
           </article>
           <details class="panel research-tools" id="research-tools"><summary>比较方案与出发间隔</summary><div id="schedule-study"></div></details>
-          <button id="export-compare" class="button legacy-export" disabled>导出两方案实验</button>
-          <details id="legacy-comparison" class="panel legacy-comparison"><summary>自定义两方案比较</summary>
+          <details id="legacy-comparison" class="panel legacy-comparison"><summary>自定义两方案比较</summary><div class="legacy-actions"><button id="export-compare" class="button" disabled>导出两方案实验</button></div>
           <ol class="experiment-steps" aria-label="比较步骤">
             <li data-experiment-step="1"><span>1</span>保存 A</li>
             <li data-experiment-step="2"><span>2</span>修改 B</li>
@@ -497,7 +495,7 @@
     <script src="school-engine.js"></script>
     <script src="common-windows.js"></script>
     <script src="scene-state.js"></script>
-    <script src="canteen3d.js"></script>
+    <script src="hall-design.js"></script><script src="dining-people.js"></script><script src="canteen3d.js"></script>
     <script src="research.js"></script>
     <script src="binhe-cohort.js"></script>
     <script src="decision-support.js"></script>
@@ -508,6 +506,6 @@
     <script src="parameter-view.js"></script>
     <script src="schedule-study.js"></script>
     <script src="schedule-view.js"></script>
-    <script src="workflow-view.js"></script><script src="app.js"></script>
+    <script src="workflow-view.js"></script><script src="product-ui.js"></script><script src="app.js"></script>
   </body>
 </html>

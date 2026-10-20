@@ -179,6 +179,10 @@
           `<div class="grade-row"><i class="g${i + 1}"></i><div><b>${escape(g.name)}</b><span>${g.students} 人</span></div><strong>${shortClock(g.releaseTime)}</strong></div>`
       )
       .join('');
+    $('student-number').max=c.students;
+    $('student-number').value=Math.min(Number($('student-number').value)||1,c.students);
+    $('student-locate-status').textContent='';
+    $('run-feedback').innerHTML=DiningIcons('check')+'本轮计算完成<span>共 '+c.students+' 名学生</span>';
     const warnings = state.result.validityWarnings;
     $('warning-count').textContent = warnings.length ? '· ' + warnings.length + ' 项' : '';
     $('warnings').innerHTML =
@@ -227,6 +231,7 @@
     if (!state.result) return;
     const snap = E.snapshot(state.result, state.time);
     $('timeline').value = state.time;
+    $('timeline').style.setProperty('--progress',(state.time/state.result.metrics.observationEnd*100).toFixed(2)+'%');
     $('clock').textContent = clock(state.time);
     const counts = [
       ['排队', snap.waiting],
@@ -237,7 +242,7 @@
       ['返程', snap.returning],
       ['完成', snap.endpointCompleted]
     ];
-    $('live-counts').innerHTML = counts.map(([k, v]) => `<span>${k}<b>${v}</b></span>`).join('');
+    $('live-counts').innerHTML = counts.map(([k, v],i) => `<span>${DiningIcons(DiningCountIcons[i])}<span class="count-content">${k}<b>${v}<small>人</small></b></span></span>`).join('');
     if (state.mode === '3d' && state.view) {
       const frame = CanteenSceneState.frame(state.result, state.time, state.view.layout, snap);
       state.view.update(frame, { playing: state.playing, timeScale: Number($('speed').value) });
@@ -267,10 +272,13 @@
         ['放行', clock(s.release)],
         ['到达', clock(s.arrival)],
         ['开始取餐', clock(s.start)],
+        ['取餐结束', clock(s.end)],
         ['排队', f(s.wait) + ' 分'],
         ['等座', f(s.seatWait) + ' 分'],
         ['端盘步行', f((s.indoorWalk || 0) * 60, 1) + ' 秒'],
         ['开始用餐', clock(s.seatStart)],
+        ['用餐结束', clock(s.mealEnd)],
+        ['返回教室', clock(s.endpointTime)],
         ['完整用时', f(s.readyToEndpoint) + ' 分'],
         ['是否按时', s.late ? '超过设定截止' : '按时完成']
       ];
@@ -293,7 +301,7 @@
       '</dl>';
   }
   function updatePlay() {
-    $('play').textContent = state.playing ? 'Ⅱ' : '▶';
+    $('play').innerHTML = DiningIcons(state.playing ? 'pause' : 'play');
     $('play').setAttribute('aria-label', state.playing ? '暂停回放' : '播放回放');
   }
   function animate(now) {
@@ -956,7 +964,18 @@
   };
   document
     .querySelectorAll('[data-camera]')
-    .forEach((b) => (b.onclick = () => state.view?.setCamera(b.dataset.camera)));
+    .forEach((b) => (b.onclick = () => {state.view?.setCamera(b.dataset.camera);document.querySelectorAll('[data-camera]').forEach(button=>button.setAttribute('aria-pressed',String(button===b)));}));
+  $('student-locate-form').onsubmit=event=>{
+    event.preventDefault();
+    const id=Number($('student-number').value)-1,student=state.result.students.find(s=>s.id===id);
+    if(!student) return;
+    state.playing=false;
+    state.time=student.seatRoute?.length?(student.seatWalkStart+student.seatStart)/2:(student.arrival+student.start)/2;
+    state.view?.selectStudent(id);
+    if(state.view&&state.mode!=='3d')setMode('3d');
+    updatePlay();renderFrame();inspect({type:'student',id});
+    $('student-locate-status').textContent='已定位 '+(id+1)+' 号学生'+(state.view?' · 就餐轨迹示意':'');
+  };
   $('play').onclick = () => {
     if (state.time >= state.result.metrics.observationEnd) state.time = 0;
     state.playing = !state.playing;
@@ -1108,6 +1127,7 @@
       build: window.DiningLabBuild ? R.clone(window.DiningLabBuild) : null,
       tab: state.tab,
       mode: state.mode,
+      rendering: state.view ? {drawCalls: state.view.renderer.info.render.calls,triangles: state.view.renderer.info.render.triangles,geometries: state.view.renderer.info.memory.geometries,textures: state.view.renderer.info.memory.textures,visiblePeople: state.view.crowd?.items.length || 0,pickedStudent:state.view.selectedId,journeySegments:state.view.journeyTrace?.count||0,pickTargets:state.view.getPickTargets()} : null,
       busy: state.busy,
       config: R.clone(state.config),
       metrics: R.metrics(state.result),

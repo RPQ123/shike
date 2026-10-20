@@ -1,29 +1,29 @@
 {
   "version": "2.5.0",
-  "edition": "精简三步高清图版",
-  "build": "7caedba3de9d0386",
+  "edition": "全新界面与三维场景版",
+  "build": "cd34c3efd45813e4",
   "executions": 660,
   "selectedSeconds": 70,
-  "reportPdfSha256": "a99a9cbfb31eb0c024f533a5b439732e7dc954272aa5554613fb91ecde63796e",
+  "reportPdfSha256": "9a954f2ac445f664de63af0c46fba060a13bccd6f5a1033083b0feec43edd538",
   "resultsSha256": "591d7542864ee7b068c078e1b06b8df1c05923221904cad09e040b62b225e2dd",
   "packages": [
     {
-      "file": "校园食堂研究_精简三步高清图版_提交材料.zip",
-      "bytes": 9210319,
-      "sha256": "51638061c5459615b4bb130ef54e4dae569056ec2c3e1ea412b19a17df73e3f8",
+      "file": "校园食堂研究_全新界面与三维场景版_提交材料.zip",
+      "bytes": 10606405,
+      "sha256": "6f7f806b1d0a9822bc0d6b889777af07e0a7c9eb9ef8b27bdc08e8f4addcec49",
       "entries": 25
     },
     {
-      "file": "校园食堂研究_精简三步高清图版_Windows与离线网页.zip",
-      "bytes": 23171960,
-      "sha256": "fa3271632deb833c1a0c3b08aafbaec909f3be7310179f391fbb303566562761",
-      "entries": 178
+      "file": "校园食堂研究_全新界面与三维场景版_Windows与离线网页.zip",
+      "bytes": 24583177,
+      "sha256": "0228fae6fb58b613b67e8d4aed4a21abe395174a521d04a0cf3f01baa9b01c8b",
+      "entries": 186
     },
     {
-      "file": "校园食堂研究_精简三步高清图版_源码与研究记录.zip",
-      "bytes": 17550338,
-      "sha256": "80188f0fbb87b55bf28de65414ad5e13a1f6e81f453a9188fa0b3704e21242c2",
-      "entries": 324
+      "file": "校园食堂研究_全新界面与三维场景版_源码与研究记录.zip",
+      "bytes": 18269411,
+      "sha256": "75ec20a4cf2a12431fdf48e142738c6e8f5f7042ec29d30a7f565a75a14587ee",
+      "entries": 339
     }
   ]
 }
