@@ -320,25 +320,70 @@
   function renderChart() {
     const r = state.result,
       end = r.metrics.observationEnd,
-      max = Math.max(1, r.metrics.peakQueue, r.metrics.peakSeatWaiting),
-      width = Math.max(270, $('queue-chart').clientWidth),
-      height = 180,
-      left = 38,
+      max = Math.max(4, Math.ceil(Math.max(r.metrics.peakQueue, r.metrics.peakSeatWaiting) / 4) * 4),
+      host = $('queue-chart'),
+      width = Math.max(200, host.clientWidth),
+      height = 248,
+      left = 46,
       right = width - 14,
-      bottom = 148;
+      top = 38,
+      bottom = 210;
+    const x = time => left + time / end * (right - left),
+      y = count => bottom - count / max * (bottom - top);
     const line = (items, key) =>
       items
         .map(
           (p, i) =>
-            `${i ? 'L' : 'M'}${f(left + (p.time / end) * (right - left), 1)},${f(bottom - (p[key] / max) * 110, 1)}`
+            `${i ? 'L' : 'M'}${f(x(p.time), 1)},${f(y(p[key]), 1)}`
         )
         .join(' ');
     const q = r.timeline,
       seat = r.diningTimeline;
     $('chart-note').textContent =
       `人数，不含正在取餐者。曲线按 ${f(r.meta.timelineStepMinutes, 2)} 分钟采样连线；峰值统计按完整事件计算，可能位于采样点之间。`;
-    $('queue-chart').innerHTML =
-      `<svg viewBox="0 0 ${width} ${height}"><path d="M${left} 32V${bottom}H${right}" fill="none" stroke="#cddaca"/><path d="${line(q, 'waiting')}" fill="none" stroke="#28755b" stroke-width="2"/><path d="${line(seat, 'seatWaiting')}" fill="none" stroke="#c39953" stroke-width="2"/><text x="${left - 5}" y="38" text-anchor="end" class="chart-axis">${max}</text><text x="${left}" y="172" class="chart-axis">11:20</text><text x="${right}" y="172" text-anchor="end" class="chart-axis">${shortClock(end)}</text><text x="${left}" y="18" class="chart-axis">绿色：排队　金色：等座</text></svg>`;
+    const tickStep = [1,2,5,10,15,20,30,60,120,180,360,720,1440].find(step => end / step <= Math.max(2, Math.floor((right-left)/76))) || Math.ceil(end/1440)*1440;
+    const ticks = [];
+    for(let t=0;t<=end;t+=tickStep) ticks.push(t);
+    if(end-ticks[ticks.length-1] > tickStep*.8) ticks.push(end);
+    const grid = Array.from({length:5},(_,i)=>{
+      const count=max*i/4,py=y(count);
+      return `<path d="M${left} ${py}H${right}" stroke="#e2e9e4"/><text x="${left-9}" y="${py+4}" text-anchor="end" class="chart-axis">${count}</text>`;
+    }).join('');
+    const axis=ticks.map(t=>`<g class="chart-time-tick"><path d="M${x(t)} ${bottom}v5" stroke="#a3b4aa"/><text x="${x(t)}" y="${bottom+25}" text-anchor="${t===0?'start':t===end?'end':'middle'}" class="chart-axis">${shortClock(t)}</text></g>`).join('');
+    host.innerHTML =
+      `<svg viewBox="0 0 ${width} ${height}" aria-hidden="true">${grid}${axis}<path d="${line(q, 'waiting')}" fill="none" stroke="#28755b" stroke-width="2.5"/><path d="${line(seat, 'seatWaiting')}" fill="none" stroke="#a7792d" stroke-width="2"/><text x="${left}" y="18" class="chart-axis">排队人数</text><circle cx="${left+87}" cy="13" r="4" fill="#28755b"/><text x="${left+98}" y="18" class="chart-axis">排队</text><circle cx="${left+151}" cy="13" r="4" fill="#a7792d"/><text x="${left+162}" y="18" class="chart-axis">等座</text><g class="chart-cursor" visibility="hidden"><path stroke="#497a65" stroke-dasharray="4 4"/><circle r="4.5" fill="#28755b" stroke="white" stroke-width="2"/><circle r="4" fill="#a7792d" stroke="white" stroke-width="2"/></g></svg><div class="queue-tooltip" role="status" aria-live="polite" hidden></div>`;
+    const cursor=host.querySelector('.chart-cursor'),tip=host.querySelector('.queue-tooltip');
+    let index=0;
+    const nearest=(items,t)=>{
+      let lo=0,hi=items.length-1;
+      while(lo<hi){const mid=(lo+hi)>>1;if(items[mid].time<t)lo=mid+1;else hi=mid;}
+      return lo>0&&t-items[lo-1].time<items[lo].time-t?lo-1:lo;
+    };
+    function show(i){
+      index=Math.max(0,Math.min(q.length-1,i));
+      const point=q[index],waiting=seat[nearest(seat,point.time)].seatWaiting,px=x(point.time);
+      cursor.setAttribute('visibility','visible');
+      cursor.querySelector('path').setAttribute('d',`M${px} ${top}V${bottom}`);
+      const dots=cursor.querySelectorAll('circle');
+      [point.waiting,waiting].forEach((n,j)=>{dots[j].setAttribute('cx',px);dots[j].setAttribute('cy',y(n));});
+      tip.hidden=false;
+      tip.innerHTML=`<time>${clock(point.time)}</time><span>排队人数<strong>${point.waiting}人</strong></span><span>等座人数<strong>${waiting}人</strong></span>`;
+      tip.dataset.time=point.time;
+      tip.style.left=Math.max(0,Math.min(width-tip.offsetWidth,px+14>width-tip.offsetWidth?px-tip.offsetWidth-14:px+14))+'px';
+    }
+    function hide(){cursor.setAttribute('visibility','hidden');tip.hidden=true;}
+    function pointAt(event){
+      const rect=host.querySelector('svg').getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height;
+      if(px<left||px>right||py<top||py>bottom){hide();return;}
+      show(nearest(q,(px-left)/(right-left)*end));
+    }
+    host.onpointermove=pointAt;host.onpointerdown=pointAt;host.onpointerleave=hide;host.onblur=hide;
+    host.onkeydown=event=>{
+      if(!['ArrowLeft','ArrowRight','Home','End','Escape'].includes(event.key))return;
+      event.preventDefault();
+      if(event.key==='Escape'){hide();return;}
+      show(event.key==='Home'?0:event.key==='End'?q.length-1:index+(event.key==='ArrowRight'?1:-1));
+    };
   }
   function field(key, label, value, options = {}) {
     const type = options.type || 'number',

@@ -1,29 +1,29 @@
 {
   "version": "2.5.0",
-  "edition": "座位联动版",
-  "build": "100afd3380098a8f",
+  "edition": "排版与图表版",
+  "build": "b3b15eb547a5dd09",
   "executions": 660,
   "selectedSeconds": 70,
-  "reportPdfSha256": "b3e3d4789fb0eedc1a68583776d813f8be8c9d8f9ffab41fbab0564503db40b8",
+  "reportPdfSha256": "7e50be9464bc3304f3ce18bb44e6adb6639979a25f227e17891782cb93f853b5",
   "resultsSha256": "73a76883886f797e7640ec8d8a90046c2c29df4499122c27c62b43243faedb7d",
   "packages": [
     {
-      "file": "校园食堂研究_座位联动版_提交材料.zip",
-      "bytes": 11099014,
-      "sha256": "6d232ad78861749b337f236e09029b0c6473aea497853294c8e0d8b2aa2db162",
+      "file": "校园食堂研究_排版与图表版_提交材料.zip",
+      "bytes": 11092703,
+      "sha256": "74578cd27bfac2d03d5d14af556e47575624bb3e167a35fea59734a48575b1b8",
       "entries": 29
     },
     {
-      "file": "校园食堂研究_座位联动版_Windows与离线网页.zip",
-      "bytes": 24782677,
-      "sha256": "ba633b4da920e8f1540a2c5c7798ccb48fa8ef06b01beab06340157b21c43f35",
+      "file": "校园食堂研究_排版与图表版_Windows与离线网页.zip",
+      "bytes": 24781822,
+      "sha256": "f9ddd6e042e79b20df4399be11dea38880e8da3251c642860d29ff495b1c39b0",
       "entries": 186
     },
     {
-      "file": "校园食堂研究_座位联动版_源码与研究记录.zip",
-      "bytes": 18383526,
-      "sha256": "2c8fef8b574f6b3e2cee35f0a10761921ccc0918c9a68bb22a09b983e5559b1f",
-      "entries": 353
+      "file": "校园食堂研究_排版与图表版_源码与研究记录.zip",
+      "bytes": 18388246,
+      "sha256": "8df92e96cb95f0498d3c78e68e4625a667ec1e17ba1cd0a96c86152f5edcf5a8",
+      "entries": 357
     }
   ]
 }

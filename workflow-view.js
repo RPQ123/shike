@@ -130,7 +130,10 @@
       if(k==='grade'&&ordered.length>1) gradeGapMinutes=ordered[1].releaseTime-ordered[0].releaseTime;
       gapLabel();$('setup-total').textContent='共'+c.students+'人';dirty=false;
       const m=R.metrics(result),last=Math.max(...result.students.map(s=>s.endpointTime));
-      $('result-scenario').textContent=(S.labels[k]||'自定义安排')+' · '+c.students+'人 · '+c.windows+'个窗口';
+      $('result-scenario').replaceChildren(...[['方案',S.labels[k]||'自定义安排'],['学生人数',c.students+'人'],['窗口数量',c.windows+'个'],['座位数量',c.seats+'个']].map(([label,value])=>{
+        const field=document.createElement('span'),strong=document.createElement('strong');
+        field.className='scenario-field';field.append(label+'：');strong.textContent=value;field.append(strong);return field;
+      }));
       const late=result.students.filter(s=>s.late).length;
       $('result-summary').textContent='最后一名学生于'+R.clockLabel(last)+'返回教室。'+(late?'有'+late+'人超过规定的最晚返回时刻。':'所有学生均按时返回。');
       $('result-grades').innerHTML='<table><thead><tr><th>年级</th><th>就餐人数</th><th>平均排队</th><th>平均完整用时</th></tr></thead><tbody>'+active.map(g=>'<tr><th>'+['高一','高二','高三'][g.id]+'</th><td>'+g.students+'人</td><td>'+m['grade'+g.id+'Wait'].toFixed(2)+'分钟</td><td>'+m['grade'+g.id+'Total'].toFixed(2)+'分钟</td></tr>').join('')+'</tbody></table>';
